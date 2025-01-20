@@ -175,7 +175,7 @@ const TutorCarousel = () => {
               textAlign: 'center',
               mb: { xs: 2, sm: 3 },
               color: 'primary.main',
-              fontSize: { xs: '2rem', sm: '2.5rem' },
+              fontSize: { xs: '2.25rem', sm: '2.5rem' },
               px: { xs: 2, sm: 0 },
             }}
           >
@@ -198,9 +198,9 @@ const TutorCarousel = () => {
               sx={{
                 mb: 2,
                 '& .MuiToggleButton-root': {
-                  px: { xs: 3, sm: 4 },
-                  py: 1,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  px: { xs: 4, sm: 4 },
+                  py: { xs: 1.5, sm: 1 },
+                  fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
                   '&.Mui-selected': {
                     backgroundColor: 'primary.main',
@@ -228,9 +228,9 @@ const TutorCarousel = () => {
               aria-label="grade"
               sx={{
                 '& .MuiToggleButton-root': {
-                  px: { xs: 3, sm: 4 },
-                  py: 1,
-                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  px: { xs: 4, sm: 4 },
+                  py: { xs: 1.5, sm: 1 },
+                  fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
                   '&.Mui-selected': {
                     backgroundColor: 'primary.main',
@@ -283,14 +283,14 @@ const TutorCarousel = () => {
                     },
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, sm: 3 }, display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
+                  <CardContent sx={{ p: { xs: 2, sm: 3 }, display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 2 } }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Box
                         sx={{
-                          width: { xs: 80, sm: 100, md: 120 },
-                          height: { xs: 80, sm: 100, md: 120 },
+                          width: { xs: 70, sm: 100, md: 120 },
+                          height: { xs: 70, sm: 100, md: 120 },
                           borderRadius: '50%',
-                          margin: '0 auto 1rem',
+                          margin: '0 auto 0.75rem',
                           border: '4px solid',
                           borderColor: 'primary.light',
                           overflow: 'hidden',
@@ -316,7 +316,7 @@ const TutorCarousel = () => {
                             parent.style.display = 'flex';
                             parent.style.alignItems = 'center';
                             parent.style.justifyContent = 'center';
-                            parent.style.fontSize = '2rem';
+                            parent.style.fontSize = '1.5rem';
                             parent.style.color = 'white';
                             parent.innerHTML = tutor.name.split(' ').map(n => n[0]).join('');
                           }}
@@ -327,7 +327,7 @@ const TutorCarousel = () => {
                         sx={{ 
                           fontWeight: 600, 
                           mb: { xs: 0.5, sm: 1 },
-                          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                          fontSize: { xs: '1.1rem', sm: '1.5rem' },
                         }}
                       >
                         {tutor.name}
@@ -337,25 +337,26 @@ const TutorCarousel = () => {
                         color="primary.main"
                         sx={{ 
                           fontWeight: 500, 
-                          mb: { xs: 2, sm: 3 },
-                          fontSize: { xs: '0.875rem', sm: '1rem' },
+                          mb: { xs: 1.5, sm: 3 },
+                          fontSize: { xs: '1rem', sm: '1rem' },
                         }}
                       >
                         {tutor.subject}
                       </Typography>
                     </Box>
-                    <Box sx={{ mt: { xs: 0.5, sm: 1 } }}>
+                    <Box sx={{ mt: { xs: 0, sm: 1 } }}>
                       {tutor.qualifications.map((qualification, idx) => (
                         <Typography 
                           key={idx} 
                           variant="body2" 
                           color="text.secondary"
                           sx={{ 
-                            mb: { xs: 0.75, sm: 1 },
+                            mb: { xs: 0.5, sm: 1 },
                             display: 'flex',
                             alignItems: 'flex-start',
                             textAlign: 'left',
-                            fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                            fontSize: { xs: '0.9rem', sm: '0.875rem' },
+                            lineHeight: { xs: 1.4, sm: 1.6 },
                             '&:before': {
                               content: '"•"',
                               marginRight: 1,

@@ -1,6 +1,7 @@
-import { Box, Typography, Container, useTheme } from '@mui/material';
+import { Box, Typography, Container, useTheme, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -133,7 +134,7 @@ const Hero = () => {
             sx={{
               color: 'white',
               mb: { xs: 1.5, sm: 2 },
-              fontSize: { xs: '1.25rem', sm: '1.75rem', md: '2.5rem' },
+              fontSize: { xs: '2rem', sm: '1.75rem', md: '2.5rem' },
               textAlign: 'center',
               textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
               fontWeight: 500,
@@ -153,8 +154,9 @@ const Hero = () => {
               sx={{
                 color: theme.palette.primary.main,
                 textAlign: 'center',
-                fontSize: { xs: '2rem', sm: '3rem', md: '4rem' },
+                fontSize: { xs: '3rem', sm: '3rem', md: '4rem' },
                 mt: { xs: 2, sm: 3 },
+                mb: { xs: 3, sm: 0 },
                 fontWeight: 600,
                 textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
                 letterSpacing: '-0.02em',
@@ -163,6 +165,33 @@ const Hero = () => {
             >
               Continental College
             </Typography>
+            <Box sx={{ 
+              display: { xs: 'flex', sm: 'none' },
+              justifyContent: 'center',
+              width: '100%',
+            }}>
+              <Button
+                variant="contained"
+                startIcon={<WhatsAppIcon />}
+                href="https://chat.whatsapp.com/CeMhwDKaxjJ6J4McgOfesp"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  backgroundColor: '#25D366',
+                  '&:hover': {
+                    backgroundColor: '#128C7E',
+                  },
+                  fontSize: '1.2rem',
+                  py: 1.5,
+                  px: 4,
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                Contact Us Now
+              </Button>
+            </Box>
           </motion.div>
         </motion.div>
       </Container>
