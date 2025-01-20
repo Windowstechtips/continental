@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('https://fonts.gstatic.com/s/googlesans/v45/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLU94YtzCwY.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLV154tzCwY.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  src: url('https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLa94YtzCwY.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+} 
