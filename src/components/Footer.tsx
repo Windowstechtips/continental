@@ -34,7 +34,13 @@ const Footer = () => {
               Shaping Future Leaders Through Excellence in Education
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton color="inherit" aria-label="Facebook">
+              <IconButton 
+                color="inherit" 
+                aria-label="Facebook"
+                href="https://www.facebook.com/profile.php?id=100094247400118"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <FacebookIcon />
               </IconButton>
             </Box>
@@ -45,19 +51,19 @@ const Footer = () => {
               Contact Information
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationOnIcon />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <LocationOnIcon sx={{ mt: 0.5 }} />
                 <Typography variant="body2">
-                  123 Education Street, City, Country
+                  No. 10, Vincent Joseph Mawatha, Old Negombo Road, Wattala, Sri Lanka
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <PhoneIcon />
-                <Typography variant="body2">+1 234 567 890</Typography>
+                <Typography variant="body2">071 123 3233</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <EmailIcon />
-                <Typography variant="body2">info@continentalcollege.com</Typography>
+                <Typography variant="body2">continentalwattala@gmail.com</Typography>
               </Box>
             </Box>
           </Grid>

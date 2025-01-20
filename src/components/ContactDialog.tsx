@@ -75,8 +75,9 @@ const ContactDialog = ({ open, onClose }: ContactDialogProps) => {
               <Button
                 variant="contained"
                 startIcon={<WhatsAppIcon />}
-                href="https://wa.me/"
+                href="https://chat.whatsapp.com/CeMhwDKaxjJ6J4McgOfesp"
                 target="_blank"
+                rel="noopener noreferrer"
                 sx={{
                   mt: 2,
                   backgroundColor: '#25D366',
