@@ -132,7 +132,7 @@ const TutorCarousel = () => {
   const [grade, setGrade] = useState('9');
 
   const handleCurriculumChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     newCurriculum: string,
   ) => {
     if (newCurriculum !== null) {
@@ -141,7 +141,7 @@ const TutorCarousel = () => {
   };
 
   const handleGradeChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     newGrade: string,
   ) => {
     if (newGrade !== null) {

@@ -4,7 +4,6 @@ import {
   Container, 
   IconButton, 
   Toolbar, 
-  Typography, 
   Button,
   useTheme,
   Drawer,
@@ -15,7 +14,6 @@ import {
   ListItemIcon,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import SchoolIcon from '@mui/icons-material/School';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
 import PeopleIcon from '@mui/icons-material/People';

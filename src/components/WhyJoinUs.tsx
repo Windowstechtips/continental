@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import SchoolIcon from '@mui/icons-material/School';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 
 const reasons = [
