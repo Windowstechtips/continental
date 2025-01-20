@@ -20,6 +20,8 @@ import PeopleIcon from '@mui/icons-material/People';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useState } from 'react';
 import ContactDialog from './ContactDialog';
 
@@ -32,6 +34,8 @@ const navItems = [
   { label: 'Home', href: '#home', icon: <HomeIcon /> },
   { label: 'Why Join Us', href: '#why-join', icon: <HelpIcon /> },
   { label: 'Our Tutors', href: '#tutors', icon: <PeopleIcon /> },
+  { label: 'Gallery', href: '#gallery', icon: <CollectionsIcon /> },
+  { label: 'Achievements', href: '#achievements', icon: <EmojiEventsIcon /> },
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
@@ -69,9 +73,10 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
           src="/misc/main.png"
           alt="Continental College"
           sx={{
-            height: { xs: 45, sm: 55 },
+            height: { xs: 45, sm: 50 },
             width: 'auto',
             objectFit: 'contain',
+            filter: theme.palette.mode === 'dark' ? 'none' : 'brightness(0)',
           }}
         />
       </Box>
@@ -155,9 +160,10 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
                 src="/misc/main.png"
                 alt="Continental College"
                 sx={{
-                  height: { xs: 45, sm: 55 },
+                  height: { xs: 45, sm: 50 },
                   width: 'auto',
                   objectFit: 'contain',
+                  filter: theme.palette.mode === 'dark' ? 'none' : 'brightness(0)',
                 }}
               />
             </Box>

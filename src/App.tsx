@@ -5,6 +5,8 @@ import Hero from './components/Hero';
 import WhyJoinUs from './components/WhyJoinUs';
 import TutorCarousel from './components/TutorCarousel';
 import Footer from './components/Footer';
+import Gallery from './components/Gallery';
+import StudentAchievements from './components/StudentAchievements';
 import './styles/fonts.css';
 
 function App() {
@@ -33,55 +35,57 @@ function App() {
       },
     },
     typography: {
-      fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+      fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       allVariants: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       },
       h1: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontWeight: 600,
         fontSize: '3.5rem',
         letterSpacing: '-0.02em',
       },
       h2: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontWeight: 600,
         fontSize: '2.5rem',
         letterSpacing: '-0.01em',
       },
       h3: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         fontWeight: 600,
         letterSpacing: '-0.01em',
       },
       h4: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
-        fontWeight: 600,
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontWeight: 500,
         letterSpacing: '-0.01em',
       },
       h5: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
-        fontWeight: 600,
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontWeight: 500,
         letterSpacing: '-0.01em',
       },
       h6: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
-        fontWeight: 600,
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontWeight: 500,
         letterSpacing: '-0.01em',
       },
       button: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         textTransform: 'none',
         fontWeight: 500,
         letterSpacing: '-0.01em',
       },
       body1: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         letterSpacing: '-0.01em',
+        fontWeight: 400,
       },
       body2: {
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+        fontFamily: '"Proxima Nova", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         letterSpacing: '-0.01em',
+        fontWeight: 400,
       },
     },
     shape: {
@@ -156,6 +160,8 @@ function App() {
           <Hero />
           <WhyJoinUs />
           <TutorCarousel />
+          <Gallery />
+          <StudentAchievements />
         </main>
         <Footer />
       </div>

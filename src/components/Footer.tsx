@@ -30,8 +30,8 @@ const Footer = () => {
                 mb: 2,
               }}
             />
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Shaping Future Leaders Through Excellence in Education
+            <Typography variant="body2" color="white" sx={{ mt: 1, opacity: 0.7 }}>
+              Unlock Your Potential, Embrace Education
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <IconButton 

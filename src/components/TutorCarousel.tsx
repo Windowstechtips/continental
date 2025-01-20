@@ -274,16 +274,43 @@ const TutorCarousel = () => {
                       : 'divider',
                     borderWidth: 1,
                     borderStyle: 'solid',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'radial-gradient(circle at bottom right, rgba(25, 118, 210, 0.4), rgba(66, 165, 245, 0.1), rgba(25, 118, 210, 0), rgba(25, 118, 210, 0))',
+                      backgroundSize: '200% 200%',
+                      backgroundPosition: '0% 0%',
+                      opacity: 0,
+                      transition: 'all 0.5s ease-in-out',
+                      zIndex: 0,
+                    },
                     '&:hover': {
                       transform: 'translateY(-8px)',
-                      transition: 'transform 0.3s ease-in-out',
+                      transition: 'all 0.3s ease-in-out',
                       boxShadow: theme.palette.mode === 'dark' 
                         ? '0 8px 16px rgba(0,0,0,0.4)' 
                         : theme.shadows[8],
+                      '&::before': {
+                        opacity: 1,
+                        backgroundPosition: '100% 100%',
+                      }
                     },
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, sm: 3 }, display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 2 } }}>
+                  <CardContent sx={{ 
+                    p: { xs: 2, sm: 3 }, 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: { xs: 1, sm: 2 },
+                    position: 'relative',
+                    zIndex: 1,
+                  }}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Box
                         sx={{
