@@ -22,6 +22,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import NewspaperIcon from '@mui/icons-material/Newspaper';
 import { useState } from 'react';
 import ContactDialog from './ContactDialog';
 
@@ -36,6 +37,7 @@ const navItems = [
   { label: 'Our Tutors', href: '#tutors', icon: <PeopleIcon /> },
   { label: 'Gallery', href: '#gallery', icon: <CollectionsIcon /> },
   { label: 'Achievements', href: '#achievements', icon: <EmojiEventsIcon /> },
+  { label: 'News', href: '#news', icon: <NewspaperIcon /> },
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {

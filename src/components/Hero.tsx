@@ -41,12 +41,13 @@ const Hero = () => {
   }, [nextSlide]);
 
   return (
-    <Box 
-      id="home" 
-      sx={{ 
-        pt: { xs: 8, sm: 10, md: 12 },
+    <Box
+      id="home"
+      sx={{
         minHeight: '100vh',
-        width: '100%',
+        pt: { xs: '96px', sm: '104px' },
+        display: 'flex',
+        alignItems: 'center',
         position: 'relative',
         overflow: 'hidden',
       }}

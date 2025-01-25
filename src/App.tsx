@@ -7,6 +7,8 @@ import TutorCarousel from './components/TutorCarousel';
 import Footer from './components/Footer';
 import Gallery from './components/Gallery';
 import StudentAchievements from './components/StudentAchievements';
+import News from './components/News';
+import NewsTicker from './components/NewsTicker';
 import './styles/fonts.css';
 
 function App() {
@@ -156,12 +158,14 @@ function App() {
         fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
       }}>
         <Navbar onToggleTheme={toggleColorMode} isDark={mode === 'dark'} />
+        <NewsTicker />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
           <Hero />
           <WhyJoinUs />
           <TutorCarousel />
           <Gallery />
           <StudentAchievements />
+          <News />
         </main>
         <Footer />
       </div>
