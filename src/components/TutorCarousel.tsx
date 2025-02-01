@@ -161,7 +161,7 @@ const TutorCarousel = () => {
               >
                 <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Avatar
-                    src={teacher.picture_id ? `${window.location.origin}/misc/teachers/${teacher.picture_id}` : undefined}
+                    src={teacher.picture_id ? `/misc/teachers/${teacher.picture_id}` : undefined}
                     alt={teacher.teacher_name}
                     sx={{
                       width: 80,
@@ -171,8 +171,7 @@ const TutorCarousel = () => {
                     }}
                     onError={(e) => {
                       console.error('Failed to load image:', e, 
-                        `Attempted URL: ${window.location.origin}/misc/teachers/${teacher.picture_id}`);
-                      // Prevent infinite error loop
+                        `Attempted URL: /misc/teachers/${teacher.picture_id}`);
                       e.currentTarget.onerror = null;
                     }}
                   >
