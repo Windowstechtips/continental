@@ -1,135 +1,36 @@
-import { Box, Container, Grid, Typography, Card, CardContent, useTheme, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme, ToggleButtonGroup, ToggleButton, Avatar } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-
-const tutors = [
-  {
-    name: 'Isuru Hewage',
-    image: '/misc/teachers/isuru.jpg',
-    subject: 'Mathematics',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'BCS - University of colombo',
-      'MSC in Mathematics Teaching - University of Colombo',
-      '18+ Years of mathematics teaching experience in edexcel and cambridge',
-      '8+ Years as a school teacher in Lyceum International School Nugegoda'
-    ],
-  },
-  {
-    name: 'Arosha Senevirathne',
-    image: '/misc/teachers/arosha.jpg',
-    subject: 'Chemistry',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'BSc (Hons) Special in Chemistry (Top of the Batch, University of Jaffna)',
-      'MSc in Chemistry Education (Reading, University of Colombo)',
-      'Over 7 years of teaching experience',
-      'Leading Chemistry teacher in Nugegoda and Kurunegala areas'
-    ],
-  },
-  {
-    name: 'Chatura Wijenaike',
-    image: '/misc/teachers/chatura.jpg',
-    subject: 'English Literature and Language',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'BA in English (USJP)',
-      'MA in Linguistics (University of Kelaniya)',
-      'National Diploma in English (Advanced Technical Institute)'
-    ],
-  },
-  {
-    name: 'Hashini Perera',
-    image: '/misc/teachers/hashini.jpg',
-    subject: 'Economics, Business Studies, Commerce',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'CIMA Passed Finalist (Chartered Institute of Management Accountants)',
-      'CIM Passed Finalist (Chartered Institute of Marketing)',
-      'Former Auditor at KPMG',
-      'Over 5+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Tilak Gunaratne',
-    image: '/misc/teachers/tilak.jpg',
-    subject: 'Accounting',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'Fellow Member of the Institute of Chartered Accountants (CA)',
-      'Associate Member of ICMA',
-      'Reading MBA at PIM',
-      'Former Director of Finance and Commercial Operations of the Sri Lanka branch of a Singapore-based company',
-      'Over 7+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Chathura Fernando',
-    image: '/misc/teachers/chathura.jpg',
-    subject: 'Biology',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'B.Sc. (Hons) Biomedical (Top of Batch)',
-      'M.Sc. Education',
-      'Former Biology Teacher at Lyceum International School, Wattala',
-      'Currently Coordinator of Biology at OKI International School, Kandana branch',
-      'Visiting Lecturer for Biomedical Science for MSU and IIHS',
-      'Over 6+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Roshan Jayawardana',
-    image: '/misc/teachers/roshan.jpg',
-    subject: 'Computer Science',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'B.Sc. (Hons) in IT (University of Moratuwa)',
-      'M.Sc. (University of Colombo)',
-      'Former Full-Time Lecturer at SLIIT',
-      'Currently Visiting Lecturer at SLIIT',
-      'Professional Member of the Computer Society of Sri Lanka',
-      'Over 12+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Rohab Allang',
-    image: '/misc/teachers/rohab.jpg',
-    subject: 'Physics',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'B.Sc. (Hons) in Aircraft Maintenance Engineering (General Sir John Kotelawala Defense University)',
-      '6 months training in Sri Lankan Airlines (B1.1 Engineering)',
-      'Over 3+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Shehan Cooray',
-    image: '/misc/teachers/shehan.jpg',
-    subject: 'Physics',
-    curriculum: ['edexcel', 'cambridge'],
-    grades: ['9', '10'],
-    qualifications: [
-      'Bachelor of Engineering (First Class) from the University of Bolton',
-      'Full-Time Physics Teacher at a leading international school',
-      'Full-Time Physics Lecturer at Pathfinder Academy, Ja-Ela',
-      'Associate Member of IIESL and ECSL',
-      'Over 8+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-];
+import { useState, useEffect } from 'react';
+import TutorExpandedDialog from './TutorExpandedDialog';
+import { TeacherContent } from '../types/database.types';
+import { fetchTeachersContent } from '../services/supabase';
 
 const TutorCarousel = () => {
   const theme = useTheme();
   const [curriculum, setCurriculum] = useState('edexcel');
   const [grade, setGrade] = useState('9');
+  const [selectedTutor, setSelectedTutor] = useState<TeacherContent | null>(null);
+  const [teachers, setTeachers] = useState<TeacherContent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadTeachers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const teachersData = await fetchTeachersContent();
+        setTeachers(teachersData || []);
+      } catch (error) {
+        console.error('Error loading teachers:', error);
+        setError('Failed to load teachers. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTeachers();
+  }, []);
 
   const handleCurriculumChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -149,10 +50,153 @@ const TutorCarousel = () => {
     }
   };
 
+  const handleTutorClick = (tutor: TeacherContent) => {
+    setSelectedTutor(tutor);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedTutor(null);
+  };
+
   // Filter tutors based on selected curriculum and grade
-  const filteredTutors = tutors.filter(tutor => 
-    tutor.curriculum.includes(curriculum) && tutor.grades.includes(grade)
-  );
+  // Note: We'll need to add curriculum and grades to the Supabase schema if you want to keep this functionality
+  const filteredTeachers = teachers;
+
+  const renderQualifications = (teacher: TeacherContent) => {
+    if (!teacher.qualifications || teacher.qualifications.length === 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ mb: 1 }}>
+          Qualifications:
+        </Typography>
+        {teacher.qualifications.map((qualification, idx) => (
+          <Typography
+            key={idx}
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mb: 0.5,
+              display: 'flex',
+              alignItems: 'flex-start',
+              fontSize: '0.8rem',
+              lineHeight: 1.4,
+              '&:before': {
+                content: '"•"',
+                marginRight: 1,
+                color: 'primary.main',
+              }
+            }}
+          >
+            {qualification}
+          </Typography>
+        ))}
+      </>
+    );
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          minHeight: '200px'
+        }}>
+          <Typography>Loading teachers...</Typography>
+        </Box>
+      );
+    }
+
+    if (error) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          minHeight: '200px'
+        }}>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      );
+    }
+
+    if (!filteredTeachers || filteredTeachers.length === 0) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          minHeight: '200px'
+        }}>
+          <Typography>No teachers available at the moment.</Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Grid container spacing={3}>
+        {filteredTeachers.map((teacher, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={teacher.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.02)',
+                  },
+                }}
+                onClick={() => handleTutorClick(teacher)}
+              >
+                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Avatar
+                    src={teacher.picture_id ? `${window.location.origin}/misc/teachers/${teacher.picture_id}` : undefined}
+                    alt={teacher.teacher_name}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      bgcolor: 'primary.main',
+                      fontSize: '2rem',
+                    }}
+                    onError={(e) => {
+                      console.error('Failed to load image:', e, 
+                        `Attempted URL: ${window.location.origin}/misc/teachers/${teacher.picture_id}`);
+                      // Prevent infinite error loop
+                      e.currentTarget.onerror = null;
+                    }}
+                  >
+                    {teacher.teacher_name.charAt(0)}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h6" component="h2" sx={{ fontSize: '1.1rem' }}>
+                      {teacher.teacher_name}
+                    </Typography>
+                    <Typography variant="subtitle1" color="primary" sx={{ fontSize: '0.9rem' }}>
+                      {teacher.subject_name}
+                    </Typography>
+                  </Box>
+                </Box>
+                <CardContent sx={{ pt: 0, pb: 2 }}>
+                  {renderQualifications(teacher)}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    );
+  };
 
   return (
     <Box 
@@ -252,156 +296,15 @@ const TutorCarousel = () => {
           </Box>
         </motion.div>
 
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} justifyContent="center">
-          {filteredTutors.map((tutor, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(0, 0, 0, 0.4)' 
-                      : 'background.paper',
-                    borderColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'divider',
-                    borderWidth: 1,
-                    borderStyle: 'solid',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: 'radial-gradient(circle at bottom right, rgba(25, 118, 210, 0.4), rgba(66, 165, 245, 0.1), rgba(25, 118, 210, 0), rgba(25, 118, 210, 0))',
-                      backgroundSize: '200% 200%',
-                      backgroundPosition: '0% 0%',
-                      opacity: 0,
-                      transition: 'all 0.5s ease-in-out',
-                      zIndex: 0,
-                    },
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      transition: 'all 0.3s ease-in-out',
-                      boxShadow: theme.palette.mode === 'dark' 
-                        ? '0 8px 16px rgba(0,0,0,0.4)' 
-                        : theme.shadows[8],
-                      '&::before': {
-                        opacity: 1,
-                        backgroundPosition: '100% 100%',
-                      }
-                    },
-                  }}
-                >
-                  <CardContent sx={{ 
-                    p: { xs: 2, sm: 3 }, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: { xs: 1, sm: 2 },
-                    position: 'relative',
-                    zIndex: 1,
-                  }}>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Box
-                        sx={{
-                          width: { xs: 70, sm: 100, md: 120 },
-                          height: { xs: 70, sm: 100, md: 120 },
-                          borderRadius: '50%',
-                          margin: '0 auto 0.75rem',
-                          border: '4px solid',
-                          borderColor: 'primary.light',
-                          overflow: 'hidden',
-                          backgroundColor: 'primary.main',
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src={tutor.image}
-                          alt={tutor.name}
-                          sx={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'center',
-                          }}
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            const parent = target.parentElement;
-                            if (!parent) return;
+        {renderContent()}
 
-                            target.style.display = 'none';
-                            parent.style.display = 'flex';
-                            parent.style.alignItems = 'center';
-                            parent.style.justifyContent = 'center';
-                            parent.style.fontSize = '1.5rem';
-                            parent.style.color = 'white';
-                            parent.innerHTML = tutor.name.split(' ').map(n => n[0]).join('');
-                          }}
-                        />
-                      </Box>
-                      <Typography 
-                        variant="h5" 
-                        sx={{ 
-                          fontWeight: 600, 
-                          mb: { xs: 0.5, sm: 1 },
-                          fontSize: { xs: '1.1rem', sm: '1.5rem' },
-                        }}
-                      >
-                        {tutor.name}
-                      </Typography>
-                      <Typography 
-                        variant="subtitle1" 
-                        color="primary.main"
-                        sx={{ 
-                          fontWeight: 500, 
-                          mb: { xs: 1.5, sm: 3 },
-                          fontSize: { xs: '1rem', sm: '1rem' },
-                        }}
-                      >
-                        {tutor.subject}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ mt: { xs: 0, sm: 1 } }}>
-                      {tutor.qualifications.map((qualification, idx) => (
-                        <Typography 
-                          key={idx} 
-                          variant="body2" 
-                          color="text.secondary"
-                          sx={{ 
-                            mb: { xs: 0.5, sm: 1 },
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            textAlign: 'left',
-                            fontSize: { xs: '0.9rem', sm: '0.875rem' },
-                            lineHeight: { xs: 1.4, sm: 1.6 },
-                            '&:before': {
-                              content: '"•"',
-                              marginRight: 1,
-                              color: 'primary.main',
-                              flexShrink: 0,
-                            }
-                          }}
-                        >
-                          {qualification}
-                        </Typography>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
+        {selectedTutor && (
+          <TutorExpandedDialog
+            open={Boolean(selectedTutor)}
+            onClose={handleCloseDialog}
+            tutor={selectedTutor}
+          />
+        )}
       </Container>
     </Box>
   );

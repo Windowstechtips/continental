@@ -2,6 +2,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { useState, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import Subjects from './components/Subjects';
 import WhyJoinUs from './components/WhyJoinUs';
 import TutorCarousel from './components/TutorCarousel';
 import Footer from './components/Footer';
@@ -162,10 +163,11 @@ function App() {
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
           <Hero />
           <WhyJoinUs />
+          <Subjects />
           <TutorCarousel />
-          <Gallery />
-          <StudentAchievements />
           <News />
+          <StudentAchievements />
+          <Gallery />
         </main>
         <Footer />
       </div>

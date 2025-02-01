@@ -10,14 +10,9 @@ import {
   Divider,
   Chip
 } from '@mui/material';
-import { supabase } from '../supabaseClient';
-
-interface NewsItem {
-  id: number;
-  title: string;
-  content: string;
-  created_at: string;
-}
+import { motion } from 'framer-motion';
+import { fetchNews } from '../services/supabase';
+import type { NewsItem } from '../services/supabase';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -33,22 +28,16 @@ const News = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
 
   useEffect(() => {
-    fetchNews();
+    const loadNews = async () => {
+      try {
+        const data = await fetchNews();
+        setNews(data);
+      } catch (error) {
+        console.error('Error fetching news:', error);
+      }
+    };
+    loadNews();
   }, []);
-
-  const fetchNews = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('news')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setNews(data || []);
-    } catch (error) {
-      console.error('Error fetching news:', error);
-    }
-  };
 
   return (
     <Box

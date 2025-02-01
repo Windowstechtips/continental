@@ -23,6 +23,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
+import SchoolIcon from '@mui/icons-material/School';
 import { useState } from 'react';
 import ContactDialog from './ContactDialog';
 
@@ -31,13 +32,23 @@ interface NavbarProps {
   isDark: boolean;
 }
 
+const pages = [
+  { name: 'Home', href: '#home' },
+  { name: 'Subjects', href: '#subjects' },
+  { name: 'Teachers', href: '#tutors' },
+  { name: 'Gallery', href: '#gallery' },
+  { name: 'News', href: '#news' },
+  { name: 'Contact', href: '#contact' },
+];
+
 const navItems = [
   { label: 'Home', href: '#home', icon: <HomeIcon /> },
   { label: 'Why Join Us', href: '#why-join', icon: <HelpIcon /> },
-  { label: 'Our Tutors', href: '#tutors', icon: <PeopleIcon /> },
-  { label: 'Gallery', href: '#gallery', icon: <CollectionsIcon /> },
-  { label: 'Achievements', href: '#achievements', icon: <EmojiEventsIcon /> },
+  { label: 'Subjects', href: '#subjects', icon: <SchoolIcon /> },
+  { label: 'Teachers', href: '#tutors', icon: <PeopleIcon /> },
   { label: 'News', href: '#news', icon: <NewspaperIcon /> },
+  { label: 'Achievements', href: '#achievements', icon: <EmojiEventsIcon /> },
+  { label: 'Gallery', href: '#gallery', icon: <CollectionsIcon /> },
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
@@ -78,7 +89,7 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
             height: { xs: 45, sm: 50 },
             width: 'auto',
             objectFit: 'contain',
-            filter: theme.palette.mode === 'dark' ? 'none' : 'brightness(0)',
+            filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
           }}
         />
       </Box>
@@ -165,7 +176,7 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
                   height: { xs: 45, sm: 50 },
                   width: 'auto',
                   objectFit: 'contain',
-                  filter: theme.palette.mode === 'dark' ? 'none' : 'brightness(0)',
+                  filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
                 }}
               />
             </Box>
