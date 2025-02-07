@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Typography, Card, CardContent, useTheme, ToggleButtonGroup, ToggleButton, Avatar } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme, ToggleButtonGroup, ToggleButton, Avatar, Chip, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import TutorExpandedDialog from './TutorExpandedDialog';
@@ -58,9 +58,20 @@ const TutorCarousel = () => {
     setSelectedTutor(null);
   };
 
+  // Parse grades and syllabi from string to array
+  const parseTeacherData = (teacher: TeacherContent) => {
+    const grades = teacher.grade ? teacher.grade.split(',').map(g => g.trim()) : [];
+    const syllabi = teacher.syllabus ? teacher.syllabus.split(',').map(s => s.trim().toLowerCase()) : [];
+    return { grades, syllabi };
+  };
+
   // Filter tutors based on selected curriculum and grade
-  // Note: We'll need to add curriculum and grades to the Supabase schema if you want to keep this functionality
-  const filteredTeachers = teachers;
+  const filteredTeachers = teachers.filter(teacher => {
+    const { grades, syllabi } = parseTeacherData(teacher);
+    const matchesSyllabus = syllabi.length === 0 || syllabi.includes(curriculum.toLowerCase());
+    const matchesGrade = grades.length === 0 || grades.includes(grade);
+    return matchesSyllabus && matchesGrade;
+  });
 
   const renderQualifications = (teacher: TeacherContent) => {
     if (!teacher.qualifications || teacher.qualifications.length === 0) {
@@ -94,6 +105,39 @@ const TutorCarousel = () => {
           </Typography>
         ))}
       </>
+    );
+  };
+
+  const renderTeacherPills = (teacher: TeacherContent) => {
+    const { grades, syllabi } = parseTeacherData(teacher);
+    
+    return (
+      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1, gap: 1 }}>
+        {grades.map((g, index) => (
+          <Chip
+            key={`grade-${index}`}
+            label={`Grade ${g}`}
+            size="small"
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              color: 'white',
+              fontSize: '0.75rem'
+            }}
+          />
+        ))}
+        {syllabi.map((s, index) => (
+          <Chip
+            key={`syllabus-${index}`}
+            label={s.charAt(0).toUpperCase() + s.slice(1)}
+            size="small"
+            sx={{
+              backgroundColor: s.toLowerCase() === 'edexcel' ? 'info.main' : 'error.main',
+              color: 'white',
+              fontSize: '0.75rem'
+            }}
+          />
+        ))}
+      </Stack>
     );
   };
 
@@ -132,7 +176,7 @@ const TutorCarousel = () => {
           alignItems: 'center',
           minHeight: '200px'
         }}>
-          <Typography>No teachers available at the moment.</Typography>
+          <Typography>No teachers available for the selected filters.</Typography>
         </Box>
       );
     }
@@ -170,8 +214,7 @@ const TutorCarousel = () => {
                       fontSize: '2rem',
                     }}
                     onError={(e) => {
-                      console.error('Failed to load image:', e, 
-                        `Attempted URL: /misc/teachers/${teacher.picture_id}`);
+                      console.error('Failed to load image:', e);
                       e.currentTarget.onerror = null;
                     }}
                   >
@@ -184,6 +227,7 @@ const TutorCarousel = () => {
                     <Typography variant="subtitle1" color="primary" sx={{ fontSize: '0.9rem' }}>
                       {teacher.subject_name}
                     </Typography>
+                    {renderTeacherPills(teacher)}
                   </Box>
                 </Box>
                 <CardContent sx={{ pt: 0, pb: 2 }}>
@@ -225,7 +269,7 @@ const TutorCarousel = () => {
             Meet Our Teachers
           </Typography>
 
-          {/* Curriculum Toggle */}
+          {/* Filter Controls */}
           <Box sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -245,25 +289,17 @@ const TutorCarousel = () => {
                   py: { xs: 1.5, sm: 1 },
                   fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                  },
-                },
+                }
               }}
             >
-              <ToggleButton value="cambridge" aria-label="cambridge">
-                Cambridge
-              </ToggleButton>
               <ToggleButton value="edexcel" aria-label="edexcel">
                 Edexcel
               </ToggleButton>
+              <ToggleButton value="cambridge" aria-label="cambridge">
+                Cambridge
+              </ToggleButton>
             </ToggleButtonGroup>
 
-            {/* Grade Toggle */}
             <ToggleButtonGroup
               value={grade}
               exclusive
@@ -271,18 +307,11 @@ const TutorCarousel = () => {
               aria-label="grade"
               sx={{
                 '& .MuiToggleButton-root': {
-                  px: { xs: 4, sm: 4 },
+                  px: { xs: 3, sm: 3 },
                   py: { xs: 1.5, sm: 1 },
                   fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                  },
-                },
+                }
               }}
             >
               <ToggleButton value="9" aria-label="grade 9">
@@ -293,18 +322,18 @@ const TutorCarousel = () => {
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>
+
+          {renderContent()}
         </motion.div>
-
-        {renderContent()}
-
-        {selectedTutor && (
-          <TutorExpandedDialog
-            open={Boolean(selectedTutor)}
-            onClose={handleCloseDialog}
-            tutor={selectedTutor}
-          />
-        )}
       </Container>
+
+      {selectedTutor && (
+        <TutorExpandedDialog
+          tutor={selectedTutor}
+          open={!!selectedTutor}
+          onClose={handleCloseDialog}
+        />
+      )}
     </Box>
   );
 };

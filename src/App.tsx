@@ -1,5 +1,6 @@
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Subjects from './components/Subjects';
@@ -10,10 +11,84 @@ import Gallery from './components/Gallery';
 import StudentAchievements from './components/StudentAchievements';
 import News from './components/News';
 import NewsTicker from './components/NewsTicker';
+import Store from './components/Store';
+import { CartProvider } from './contexts/CartContext';
+import Checkout from './components/Checkout';
+import { AuthProvider } from './contexts/AuthContext';
+import Account from './components/Account';
+import Login from './components/Login';
+import Register from './components/Register';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
 import './styles/fonts.css';
+import { supabase } from './services/supabase';
+import { Box, Paper, Typography, Button } from '@mui/material';
+
+// Declare global window properties
+declare global {
+  interface Window {
+    toggleColorMode: () => void;
+    isDark: boolean;
+  }
+}
+
+// Home component to wrap the main page content
+const Home = () => (
+  <>
+    <Hero />
+    <WhyJoinUs />
+    <Subjects />
+    <TutorCarousel />
+    <News />
+    <StudentAchievements />
+    <Gallery />
+  </>
+);
+
+// Layout component to handle conditional rendering of Navbar and NewsTicker
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const isStorePage = location.pathname === '/store';
+
+  return (
+    <>
+      {!isStorePage && <Navbar onToggleTheme={window.toggleColorMode} isDark={window.isDark} />}
+      {!isStorePage && <NewsTicker />}
+      <main style={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        width: '100%',
+        marginTop: isStorePage ? 0 : '64px'
+      }}>
+        {children}
+      </main>
+      <Footer />
+    </>
+  );
+};
 
 function App() {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [initError, setInitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Test Supabase connection on app start
+    const testConnection = async () => {
+      try {
+        const { error } = await supabase.from('subjects_content').select('count', { count: 'exact' });
+        if (error) {
+          console.error('Supabase connection error:', error);
+          setInitError(error.message || 'Failed to connect to the database. Please try again later.');
+        }
+      } catch (error) {
+        console.error('App initialization error:', error);
+        setInitError('An error occurred while starting the application.');
+      }
+    };
+
+    testConnection();
+  }, []);
 
   const theme = useMemo(() => createTheme({
     palette: {
@@ -146,32 +221,84 @@ function App() {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
   };
 
+  // Add toggleColorMode and isDark to window for Layout component
+  (window as any).toggleColorMode = toggleColorMode;
+  (window as any).isDark = mode === 'dark';
+
+  if (initError) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            p: 3,
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              maxWidth: 500,
+              width: '100%',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h5" color="error" gutterBottom>
+              Application Error
+            </Typography>
+            <Typography color="text.secondary">
+              {initError}
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => window.location.reload()}
+              sx={{ mt: 3 }}
+            >
+              Retry
+            </Button>
+          </Paper>
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100vw',
-        overflow: 'hidden',
-        backgroundColor: theme.palette.background.default,
-        fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
-      }}>
-        <Navbar onToggleTheme={toggleColorMode} isDark={mode === 'dark'} />
-        <NewsTicker />
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-          <Hero />
-          <WhyJoinUs />
-          <Subjects />
-          <TutorCarousel />
-          <News />
-          <StudentAchievements />
-          <Gallery />
-        </main>
-        <Footer />
-      </div>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <CartProvider>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              minHeight: '100vh',
+              width: '100vw',
+              overflow: 'hidden',
+              backgroundColor: theme.palette.background.default,
+              fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
+            }}>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/store" element={<Store />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/account" element={<Account />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/payment/success" element={<PaymentSuccess />} />
+                  <Route path="/payment/cancel" element={<PaymentCancel />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Layout>
+            </div>
+          </CartProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 

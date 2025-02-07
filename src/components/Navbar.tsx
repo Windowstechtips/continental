@@ -13,6 +13,7 @@ import {
   ListItemText,
   ListItemIcon,
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
@@ -24,6 +25,7 @@ import CollectionsIcon from '@mui/icons-material/Collections';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import SchoolIcon from '@mui/icons-material/School';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useState } from 'react';
 import ContactDialog from './ContactDialog';
 
@@ -38,17 +40,19 @@ const pages = [
   { name: 'Teachers', href: '#tutors' },
   { name: 'Gallery', href: '#gallery' },
   { name: 'News', href: '#news' },
+  { name: 'Store', href: '/store' },
   { name: 'Contact', href: '#contact' },
 ];
 
 const navItems = [
-  { label: 'Home', href: '#home', icon: <HomeIcon /> },
-  { label: 'Why Join Us', href: '#why-join', icon: <HelpIcon /> },
-  { label: 'Subjects', href: '#subjects', icon: <SchoolIcon /> },
-  { label: 'Teachers', href: '#tutors', icon: <PeopleIcon /> },
-  { label: 'News', href: '#news', icon: <NewspaperIcon /> },
-  { label: 'Achievements', href: '#achievements', icon: <EmojiEventsIcon /> },
-  { label: 'Gallery', href: '#gallery', icon: <CollectionsIcon /> },
+  { label: 'Home', href: '/', icon: <HomeIcon /> },
+  { label: 'Why Join Us', href: '/#why-join', icon: <HelpIcon /> },
+  { label: 'Subjects', href: '/#subjects', icon: <SchoolIcon /> },
+  { label: 'Teachers', href: '/#tutors', icon: <PeopleIcon /> },
+  { label: 'News', href: '/#news', icon: <NewspaperIcon /> },
+  { label: 'Achievements', href: '/#achievements', icon: <EmojiEventsIcon /> },
+  { label: 'Gallery', href: '/#gallery', icon: <CollectionsIcon /> },
+  { label: 'Store', href: '/store', icon: <ShoppingCartIcon /> },
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
@@ -184,19 +188,36 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
             {/* Desktop Navigation */}
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
               {navItems.map((item) => (
-                <Button
-                  key={item.label}
-                  href={item.href}
-                  startIcon={item.icon}
-                  sx={{
-                    color: 'text.primary',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
-                >
-                  {item.label}
-                </Button>
+                item.href.startsWith('/#') ? (
+                  <Button
+                    key={item.label}
+                    href={item.href.substring(1)}
+                    startIcon={item.icon}
+                    sx={{
+                      color: 'text.primary',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ) : (
+                  <Button
+                    key={item.label}
+                    component={Link}
+                    to={item.href}
+                    startIcon={item.icon}
+                    sx={{
+                      color: 'text.primary',
+                      '&:hover': {
+                        backgroundColor: 'action.hover',
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                )
               ))}
               <Button
                 variant="contained"
