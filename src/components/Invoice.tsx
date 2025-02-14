@@ -169,8 +169,9 @@ const Invoice = ({ orderNumber, orderDate, customerDetails, items, total, status
                   alt="Continental College Logo"
                   style={{ 
                     width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
+                    height: 'auto',
+                    objectFit: 'contain',
+                    maxHeight: '100%'
                   }}
                 />
               </Box>

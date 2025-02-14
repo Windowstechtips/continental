@@ -8,8 +8,8 @@ import WhyJoinUs from './components/WhyJoinUs';
 import TutorCarousel from './components/TutorCarousel';
 import Footer from './components/Footer';
 import Gallery from './components/Gallery';
-import StudentAchievements from './components/StudentAchievements';
 import News from './components/News';
+import Calendar from './components/Calendar';
 import NewsTicker from './components/NewsTicker';
 import Store from './components/Store';
 import { CartProvider } from './contexts/CartContext';
@@ -40,7 +40,6 @@ const Home = () => (
     <Subjects />
     <TutorCarousel />
     <News />
-    <StudentAchievements />
     <Gallery />
   </>
 );

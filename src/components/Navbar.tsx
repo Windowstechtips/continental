@@ -13,7 +13,7 @@ import {
   ListItemText,
   ListItemIcon,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
@@ -22,12 +22,13 @@ import ContactsIcon from '@mui/icons-material/Contacts';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import SchoolIcon from '@mui/icons-material/School';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useState } from 'react';
 import ContactDialog from './ContactDialog';
+import { useAuth } from '../contexts/AuthContext';
 
 interface NavbarProps {
   onToggleTheme: () => void;
@@ -50,13 +51,14 @@ const navItems = [
   { label: 'Subjects', href: '/#subjects', icon: <SchoolIcon /> },
   { label: 'Teachers', href: '/#tutors', icon: <PeopleIcon /> },
   { label: 'News', href: '/#news', icon: <NewspaperIcon /> },
-  { label: 'Achievements', href: '/#achievements', icon: <EmojiEventsIcon /> },
   { label: 'Gallery', href: '/#gallery', icon: <CollectionsIcon /> },
   { label: 'Store', href: '/store', icon: <ShoppingCartIcon /> },
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -186,7 +188,7 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
             </Box>
 
             {/* Desktop Navigation */}
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
               {navItems.map((item) => (
                 item.href.startsWith('/#') ? (
                   <Button
@@ -219,6 +221,17 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
                   </Button>
                 )
               ))}
+              <IconButton
+                color="inherit"
+                onClick={() => navigate(user ? '/account' : '/login')}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <AccountCircleIcon color={user ? "primary" : "inherit"} />
+              </IconButton>
               <Button
                 variant="contained"
                 color="primary"

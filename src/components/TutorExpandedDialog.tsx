@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, Grid, Typography, IconButton, Box, useTheme, Divider, Avatar } from '@mui/material';
+import { Dialog, DialogContent, Grid, Typography, IconButton, Box, useTheme, Divider, Avatar, Stack, Chip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import ScienceIcon from '@mui/icons-material/Science';
@@ -19,6 +19,85 @@ interface TutorExpandedDialogProps {
 
 const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps) => {
   const theme = useTheme();
+
+  const parseTeacherData = (teacher: TeacherContent) => {
+    const grades = teacher.grade ? teacher.grade.split(',').map(g => g.trim()) : [];
+    const syllabi = teacher.syllabus ? teacher.syllabus.split(',').map(s => s.trim().toLowerCase()) : [];
+    return { grades, syllabi };
+  };
+
+  const renderTeacherPills = () => {
+    const { grades, syllabi } = parseTeacherData(tutor);
+    
+    // Combine consecutive grades
+    const combinedGrades = grades.reduce((acc: string[], grade: string, i: number) => {
+      const prevGrade = grades[i - 1];
+      const lastGroup = acc[acc.length - 1];
+      
+      if (prevGrade && parseInt(grade) === parseInt(prevGrade) + 1) {
+        if (lastGroup && lastGroup.includes('&')) {
+          // If already combined, just update the last number
+          acc[acc.length - 1] = `Grade ${lastGroup.split('Grade ')[1].split(' & ')[0]} & ${grade}`;
+        } else {
+          // Create new combined grade
+          acc[acc.length - 1] = `Grade ${prevGrade} & ${grade}`;
+        }
+      } else {
+        // If not consecutive, add as new grade
+        acc.push(`Grade ${grade}`);
+      }
+      return acc;
+    }, []);
+
+    // Combine syllabi if both exist
+    const combinedSyllabi = syllabi.length === 2 ? ['Cambridge & Edexcel'] : syllabi;
+    
+    return (
+      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2, gap: 1 }}>
+        {combinedGrades.map((g, index) => (
+          <Chip
+            key={`grade-${index}`}
+            label={g}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              fontSize: '0.75rem',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              letterSpacing: '0.02em',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            }}
+          />
+        ))}
+        {combinedSyllabi.map((s, index) => (
+          <Chip
+            key={`syllabus-${index}`}
+            label={s.includes('&') ? s : s.charAt(0).toUpperCase() + s.slice(1)}
+            size="small"
+            sx={{
+              background: s.includes('&') 
+                ? 'linear-gradient(90deg, #f44336 -10%, #2196f3 110%)'
+                : s.toLowerCase().includes('edexcel') 
+                  ? '#2196f3'  // Edexcel blue
+                  : '#f44336', // Cambridge red
+              color: 'white',
+              fontSize: '0.75rem',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              letterSpacing: '0.02em',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              '&:hover': {
+                background: s.includes('&')
+                  ? 'linear-gradient(90deg, #d32f2f -10%, #1976d2 110%)'
+                  : s.toLowerCase().includes('edexcel')
+                    ? '#1976d2'  // Darker blue on hover
+                    : '#d32f2f'  // Darker red on hover
+              }
+            }}
+          />
+        ))}
+      </Stack>
+    );
+  };
 
   const getSubjectIcon = (subject: string | null | undefined) => {
     if (!subject) return null;
@@ -85,15 +164,12 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
   };
 
   const renderFormattedDescription = (text: string) => {
-    // Split the text by newlines to process each line
     const lines = text.split('\n');
     
     return lines.map((line, index) => {
-      // Check if line contains a title (text between # symbols)
       const titleMatch = line.match(/^#(.+)#$/);
       
       if (titleMatch) {
-        // If it's a title, render it with title styling
         return (
           <Typography
             key={index}
@@ -110,7 +186,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
           </Typography>
         );
       } else if (line.trim()) {
-        // If it's regular text, render as paragraph
         return (
           <Typography
             key={index}
@@ -191,7 +266,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
             exit={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            {/* Header with gradient background */}
             <Box
               component={motion.div}
               initial={{ opacity: 0, y: 20 }}
@@ -270,12 +344,14 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
                         textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        textAlign: { xs: 'center', sm: 'left' }
+                        textAlign: { xs: 'center', sm: 'left' },
+                        mb: 2
                       }}
                     >
                       {tutor.subject_name}
                     </Typography>
                   </Box>
+                  {renderTeacherPills()}
                 </Box>
               </Box>
             </Box>
@@ -288,7 +364,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
                 transition={{ duration: 0.4, delay: 0.3 }}
               >
                 <Grid container spacing={{ xs: 2, sm: 4 }}>
-                  {/* Left side - Qualifications */}
                   <Grid item xs={12} md={4}>
                     <Typography variant="h6" gutterBottom sx={{ 
                       mb: 2,
@@ -300,7 +375,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
                     {renderQualifications()}
                   </Grid>
 
-                  {/* Divider */}
                   <Divider 
                     orientation="vertical" 
                     flexItem 
@@ -310,7 +384,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
                     }} 
                   />
 
-                  {/* Right side - Description */}
                   <Grid item xs={12} md={7}>
                     <Typography variant="h6" gutterBottom sx={{ 
                       mb: 2,

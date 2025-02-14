@@ -19,11 +19,32 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { useCart } from '../contexts/CartContext';
-import { createOrder } from '../services/supabase';
+import { createOrder, supabase } from '../services/supabase';
 import Invoice from './Invoice';
 import { useAuth } from '../contexts/AuthContext';
 import { initiatePayment } from '../services/payhere';
 import PaymentSelection from './PaymentSelection';
+
+interface InvoiceItem {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+  image_url?: string;
+}
+
+interface OrderDetails {
+  orderNumber: string;
+  orderDate: string;
+  customerDetails: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
+  items: InvoiceItem[];
+  total: number;
+}
 
 const Checkout = () => {
   const theme = useTheme();
@@ -42,19 +63,57 @@ const Checkout = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentSelection, setShowPaymentSelection] = useState(false);
-  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
   useEffect(() => {
     if (!user) {
       navigate('/login', { state: { returnTo: '/checkout' } });
+      return;
     }
+
+    // Fetch user profile data
+    const fetchUserProfile = async () => {
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profile) {
+          setFormData(prev => ({
+            ...prev,
+            name: profile.full_name || '',
+            email: user.email || '',
+            phone: profile.phone1 || '',
+            address: profile.address || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    fetchUserProfile();
   }, [user, navigate]);
 
+  // Phone number formatting function
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digits
+    const numbers = value.replace(/\D/g, '');
+    
+    // Format as XX-XXX-XXXX
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 5) return `${numbers.slice(0, 2)}-${numbers.slice(2)}`;
+    return `${numbers.slice(0, 2)}-${numbers.slice(2, 5)}-${numbers.slice(5, 9)}`;
+  };
+
   // Phone number validation
-  const validatePhone = (phone: string) => {
-    // Sri Lankan phone number format
-    const phoneRegex = /^(?:\+94|0)?[1-9][0-9]{8}$/;
-    return phoneRegex.test(phone.replace(/\s+/g, ''));
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Check if the phone number matches the format XX-XXX-XXXX
+    return /^\d{2}-\d{3}-\d{4}$/.test(phone);
   };
 
   const handleQuantityChange = (productId: string, delta: number) => {
@@ -70,14 +129,10 @@ const Checkout = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    // Format phone number as user types
     if (name === 'phone') {
-      const cleaned = value.replace(/\D/g, '');
-      let formatted = cleaned;
-      if (cleaned.length >= 10) {
-        formatted = cleaned.slice(0, 10);
-      }
-      setFormData(prev => ({ ...prev, [name]: formatted }));
+      // Format phone number as user types
+      const formattedPhone = formatPhoneNumber(value);
+      setFormData(prev => ({ ...prev, [name]: formattedPhone }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -93,11 +148,37 @@ const Checkout = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // Validate phone number
-      if (!validatePhone(formData.phone)) {
-        setError('Please enter a valid phone number');
+      // Validate required fields
+      if (!formData.name.trim()) {
+        setError('Full Name is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setError('Email is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.phone.trim()) {
+        setError('Phone number is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.address.trim()) {
+        setError('Delivery Address is required');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate phone number format
+      if (!validatePhoneNumber(formData.phone)) {
+        setError('Phone number must be in format: XX-XXX-XXXX');
         setIsSubmitting(false);
         return;
       }
@@ -107,26 +188,35 @@ const Checkout = () => {
         customerDetails: formData,
         items: items,
         total: total,
-        paymentMethod: 'pending' // Initial status, will be updated in PaymentSelection
+        paymentMethod: 'online'
       });
 
       if (orderError) throw orderError;
       if (!order) throw new Error('Failed to create order');
 
+      // Convert cart items to invoice items
+      const invoiceItems = items.map(item => ({
+        id: parseInt(item.id),
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        image_url: item.image_url
+      }));
+
       // Set order details for payment selection
-      setOrderDetails({
+      const orderDetails: OrderDetails = {
         orderNumber: order.invoice_id,
         orderDate: new Date().toLocaleDateString(),
         customerDetails: formData,
-        items: items,
+        items: invoiceItems,
         total: total
-      });
+      };
 
-      // Show payment selection
+      setOrderDetails(orderDetails);
       setShowPaymentSelection(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing order:', error);
-      setError('Failed to process your order. Please try again.');
+      setError(error.message || 'Failed to process your order. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -244,7 +334,7 @@ const Checkout = () => {
                 <Typography variant="h6" gutterBottom>
                   Order Details
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                   <TextField
                     name="name"
                     label="Full Name"
@@ -253,6 +343,8 @@ const Checkout = () => {
                     fullWidth
                     required
                     margin="normal"
+                    error={!formData.name.trim()}
+                    helperText={!formData.name.trim() ? 'Full Name is required' : ''}
                   />
                   <TextField
                     name="email"
@@ -263,6 +355,8 @@ const Checkout = () => {
                     fullWidth
                     required
                     margin="normal"
+                    error={!formData.email.trim()}
+                    helperText={!formData.email.trim() ? 'Email is required' : ''}
                   />
                   <TextField
                     name="phone"
@@ -272,6 +366,10 @@ const Checkout = () => {
                     fullWidth
                     required
                     margin="normal"
+                    error={!formData.phone.trim()}
+                    helperText={!formData.phone.trim() ? 'Phone number is required' : 'Format: XX-XXX-XXXX'}
+                    placeholder="70-412-0681"
+                    inputProps={{ maxLength: 11 }}
                   />
                   <TextField
                     name="address"
@@ -283,6 +381,8 @@ const Checkout = () => {
                     margin="normal"
                     multiline
                     rows={3}
+                    error={!formData.address.trim()}
+                    helperText={!formData.address.trim() ? 'Delivery Address is required' : ''}
                   />
                   
                   <Box sx={{ mt: 3 }}>
@@ -307,7 +407,7 @@ const Checkout = () => {
                       </Button>
                     )}
                   </Box>
-                </Box>
+                </form>
               </CardContent>
             </Card>
           </Grid>

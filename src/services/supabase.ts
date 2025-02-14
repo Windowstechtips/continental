@@ -474,48 +474,66 @@ export const createOrder = async ({
   paymentMethod?: 'online' | 'cash';
 }) => {
   try {
-    const user = await supabase.auth.getUser();
-    
+    // Get current user
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+
+    // Get next invoice number
+    const invoiceId = await getNextInvoiceNumber();
+
     // Create the order
     const { data: order, error: orderError } = await supabase
       .from('store_orders')
       .insert({
-        invoice_id: `INV-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`,
-        user_id: user.data.user?.id,
+        invoice_id: invoiceId,
+        user_id: userData.user?.id,
         customer_name: customerDetails.name,
         customer_email: customerDetails.email,
         customer_phone: customerDetails.phone,
         customer_address: customerDetails.address,
         total_amount: total,
         payment_status: paymentMethod === 'cash' ? 'pending_cash' : 'pending_online',
-        status: 'pending'
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .select()
       .single();
 
-    if (orderError) throw orderError;
-    if (!order) throw new Error('Failed to create order');
+    if (orderError) {
+      console.error('Error creating order:', orderError);
+      throw new Error(`Failed to create order: ${orderError.message}`);
+    }
+
+    if (!order) {
+      throw new Error('Failed to create order: No order data returned');
+    }
 
     // Create order items
     const orderItems = items.map(item => ({
       order_id: order.id,
       product_id: item.id,
       quantity: item.quantity,
-      price_at_time: item.price
+      price_at_time: item.price,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }));
 
     const { error: itemsError } = await supabase
       .from('store_order_items')
       .insert(orderItems);
 
-    if (itemsError) throw itemsError;
+    if (itemsError) {
+      console.error('Error creating order items:', itemsError);
+      throw new Error(`Failed to create order items: ${itemsError.message}`);
+    }
 
     return { data: order, error: null };
   } catch (error) {
     console.error('Error in createOrder:', error);
     return { 
       data: null, 
-      error: error instanceof Error ? error : new Error('Unknown error occurred') 
+      error: error instanceof Error ? error : new Error('Failed to process order')
     };
   }
 };

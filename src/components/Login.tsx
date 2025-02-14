@@ -28,7 +28,7 @@ const Login = () => {
     try {
       const { error: signInError } = await signIn(email, password);
       if (signInError) throw signInError;
-      navigate('/store');
+      navigate('/account');
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
     } finally {
@@ -37,10 +37,28 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-          <Typography variant="h4" component="h1" align="center" gutterBottom>
+    <Container maxWidth={false} sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ 
+        mt: { xs: 4, sm: 6 }, 
+        mb: 4,
+        width: '100%',
+        maxWidth: '360px'
+      }}>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderRadius: 2,
+            width: '100%'
+          }}
+        >
+          <Typography 
+            variant="h5" 
+            component="h1" 
+            align="center" 
+            gutterBottom
+            sx={{ mb: 2, fontWeight: 500 }}
+          >
             Sign In
           </Typography>
           
@@ -55,7 +73,8 @@ const Login = () => {
               label="Email"
               type="email"
               fullWidth
-              margin="normal"
+              margin="dense"
+              size="small"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -64,7 +83,8 @@ const Login = () => {
               label="Password"
               type="password"
               fullWidth
-              margin="normal"
+              margin="dense"
+              size="small"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -73,22 +93,21 @@ const Login = () => {
               type="submit"
               variant="contained"
               fullWidth
-              size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 2, mb: 1.5, py: 1 }}
             >
               Sign In
             </Button>
           </Box>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
+          <Box sx={{ mt: 1, textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ mb: 0.5 }}>
               Don't have an account?{' '}
               <MuiLink component={Link} to="/register">
                 Sign Up
               </MuiLink>
             </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
+            <Typography variant="body2">
               <MuiLink component={Link} to="/forgot-password">
                 Forgot Password?
               </MuiLink>

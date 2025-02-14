@@ -68,8 +68,8 @@ const TutorCarousel = () => {
   // Filter tutors based on selected curriculum and grade
   const filteredTeachers = teachers.filter(teacher => {
     const { grades, syllabi } = parseTeacherData(teacher);
-    const matchesSyllabus = syllabi.length === 0 || syllabi.includes(curriculum.toLowerCase());
-    const matchesGrade = grades.length === 0 || grades.includes(grade);
+    const matchesSyllabus = curriculum === 'all' || syllabi.length === 0 || syllabi.includes(curriculum.toLowerCase());
+    const matchesGrade = grade === 'all' || grades.length === 0 || grades.includes(grade);
     return matchesSyllabus && matchesGrade;
   });
 
@@ -111,12 +111,36 @@ const TutorCarousel = () => {
   const renderTeacherPills = (teacher: TeacherContent) => {
     const { grades, syllabi } = parseTeacherData(teacher);
     
+    // Combine consecutive grades
+    const combinedGrades = grades.reduce((acc: string[], grade: string, i: number) => {
+      const prevGrade = grades[i - 1];
+      const lastGroup = acc[acc.length - 1];
+      
+      if (prevGrade && parseInt(grade) === parseInt(prevGrade) + 1) {
+        // If this grade is consecutive with the previous one, combine them
+        if (lastGroup.includes('&')) {
+          // If already combined, just update the last number
+          acc[acc.length - 1] = `Grade ${lastGroup.split('Grade ')[1].split(' & ')[0]} & ${grade}`;
+        } else {
+          // Create new combined grade
+          acc[acc.length - 1] = `Grade ${prevGrade} & ${grade}`;
+        }
+      } else {
+        // If not consecutive, add as new grade
+        acc.push(`Grade ${grade}`);
+      }
+      return acc;
+    }, []);
+
+    // Combine syllabi if both exist
+    const combinedSyllabi = syllabi.length === 2 ? ['Cambridge & Edexcel'] : syllabi;
+    
     return (
       <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1, gap: 1 }}>
-        {grades.map((g, index) => (
+        {combinedGrades.map((g, index) => (
           <Chip
             key={`grade-${index}`}
-            label={`Grade ${g}`}
+            label={g}
             size="small"
             sx={{
               backgroundColor: theme.palette.primary.main,
@@ -125,15 +149,26 @@ const TutorCarousel = () => {
             }}
           />
         ))}
-        {syllabi.map((s, index) => (
+        {combinedSyllabi.map((s, index) => (
           <Chip
             key={`syllabus-${index}`}
-            label={s.charAt(0).toUpperCase() + s.slice(1)}
+            label={s.includes('&') ? s : s.charAt(0).toUpperCase() + s.slice(1)}
             size="small"
             sx={{
-              backgroundColor: s.toLowerCase() === 'edexcel' ? 'info.main' : 'error.main',
+              background: s.includes('&') 
+                ? 'linear-gradient(90deg, #f44336 -10%, #2196f3 110%)'
+                : s.toLowerCase().includes('edexcel') 
+                  ? '#2196f3'  // Edexcel blue
+                  : '#f44336', // Cambridge red
               color: 'white',
-              fontSize: '0.75rem'
+              fontSize: '0.75rem',
+              '&:hover': {
+                background: s.includes('&')
+                  ? 'linear-gradient(90deg, #d32f2f -10%, #1976d2 110%)'
+                  : s.toLowerCase().includes('edexcel')
+                    ? '#1976d2'  // Darker blue on hover
+                    : '#d32f2f'  // Darker red on hover
+              }
             }}
           />
         ))}
@@ -289,9 +324,19 @@ const TutorCarousel = () => {
                   py: { xs: 1.5, sm: 1 },
                   fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                  '&.Mui-selected': {
+                    backgroundColor: theme.palette.primary.main,
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  },
                 }
               }}
             >
+              <ToggleButton value="all" aria-label="all curricula">
+                All
+              </ToggleButton>
               <ToggleButton value="edexcel" aria-label="edexcel">
                 Edexcel
               </ToggleButton>
@@ -311,9 +356,19 @@ const TutorCarousel = () => {
                   py: { xs: 1.5, sm: 1 },
                   fontSize: { xs: '1.1rem', sm: '1rem' },
                   color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
+                  '&.Mui-selected': {
+                    backgroundColor: theme.palette.primary.main,
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  },
                 }
               }}
             >
+              <ToggleButton value="all" aria-label="all grades">
+                All
+              </ToggleButton>
               <ToggleButton value="9" aria-label="grade 9">
                 Grade 9
               </ToggleButton>
