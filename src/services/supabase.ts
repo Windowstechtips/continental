@@ -2,10 +2,20 @@ import { createClient } from '@supabase/supabase-js';
 import { SubjectContent, TeacherContent } from '../types/database.types';
 import type { CartItem } from '../contexts/CartContext';
 
+// Log Supabase configuration
+console.log('Supabase Configuration:', {
+  url: import.meta.env.VITE_SUPABASE_URL ? 'Set (hidden)' : 'Not set',
+  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Not set'
+});
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase environment variables:', {
+    url: supabaseUrl ? 'Present' : 'Missing',
+    key: supabaseKey ? 'Present' : 'Missing'
+  });
   throw new Error(
     'Missing Supabase environment variables. Please check your .env file:\n' +
     `VITE_SUPABASE_URL: ${supabaseUrl ? 'Present' : 'Missing'}\n` +
@@ -18,12 +28,15 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 // Test connection and log result
 const testConnection = async () => {
   try {
+    console.log('Testing Supabase connection...');
     const { data, error } = await supabase.from('subjects_content').select('count', { count: 'exact' });
+    
     if (error) {
-      console.error('Supabase connection error:', error.message);
+      console.error('Supabase connection error:', error.message, error);
       return false;
     }
-    console.log('Supabase connection successful');
+    
+    console.log('Supabase connection successful:', { data });
     return true;
   } catch (err) {
     console.error('Failed to test Supabase connection:', err);
@@ -32,7 +45,10 @@ const testConnection = async () => {
 };
 
 // Run connection test
-testConnection();
+console.log('Initializing Supabase connection test...');
+testConnection()
+  .then(success => console.log(`Supabase connection test ${success ? 'passed' : 'failed'}`))
+  .catch(err => console.error('Unexpected error in Supabase connection test:', err));
 
 // News-related functions
 export interface NewsItem {
@@ -44,17 +60,24 @@ export interface NewsItem {
 
 // Fetch all news items
 export const fetchNews = async (): Promise<NewsItem[]> => {
-  const { data, error } = await supabase
-    .from('news')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    console.log('Fetching news items...');
+    const { data, error } = await supabase
+      .from('news')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching news:', error);
-    throw error;
+    if (error) {
+      console.error('Error fetching news:', error);
+      throw error;
+    }
+
+    console.log(`Successfully fetched ${data?.length || 0} news items`);
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchNews:', error);
+    return [];
   }
-
-  return data || [];
 };
 
 // Fetch latest news item
@@ -120,16 +143,29 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
       return [];
     }
 
-    // Add detailed logging for picture_id
-    console.log('Raw teachers data with picture_ids:', data.map(teacher => ({
+    // Log the raw data to see all fields
+    console.log('Raw teachers data:', JSON.stringify(data, null, 2));
+
+    // Add detailed logging for image sources
+    console.log('Teacher image sources:', data.map(teacher => ({
       teacher_name: teacher.teacher_name,
       picture_id: teacher.picture_id,
-      picture_url: teacher.picture_id ? `/misc/teachers/${teacher.picture_id}` : 'no picture'
+      cloudinary_url: teacher.cloudinary_url,
+      image_source: teacher.cloudinary_url || (teacher.picture_id ? `/misc/teachers/${teacher.picture_id}` : 'no picture')
     })));
 
     // Process the data to ensure qualifications is properly handled
     const processedData = data.map(teacher => {
       console.log('Processing teacher:', teacher);
+      
+      // Check if picture_id might be a Cloudinary public_id (not a local file)
+      let cloudinaryUrl = teacher.cloudinary_url;
+      if (!cloudinaryUrl && teacher.picture_id && !teacher.picture_id.includes('.') && !teacher.picture_id.startsWith('/')) {
+        // This might be a Cloudinary public_id without an extension
+        cloudinaryUrl = `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${teacher.picture_id}`;
+        console.log(`Generated Cloudinary URL for ${teacher.teacher_name}:`, cloudinaryUrl);
+      }
+      
       try {
         return {
           id: teacher.id,
@@ -140,6 +176,7 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
             : (teacher.qualifications ? JSON.parse(teacher.qualifications) : []),
           description: teacher.description,
           picture_id: teacher.picture_id,
+          cloudinary_url: cloudinaryUrl || null,
           grade: teacher.grade || null,
           syllabus: teacher.syllabus || null
         };
@@ -152,6 +189,7 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
           qualifications: [],
           description: teacher.description,
           picture_id: teacher.picture_id,
+          cloudinary_url: cloudinaryUrl || null,
           grade: teacher.grade || null,
           syllabus: teacher.syllabus || null
         };
@@ -610,5 +648,105 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
   if (error) {
     console.error('Error updating order status:', error);
     throw error;
+  }
+};
+
+// Gallery-related functions
+export interface GalleryImage {
+  id: number;
+  public_id: string;
+  secure_url: string;
+  format: string;
+  width: number;
+  height: number;
+  created_at: string;
+  tags?: string[];
+  alt?: string;
+  title?: string;
+}
+
+// Fetch gallery images from Supabase
+export const fetchGalleryImagesFromSupabase = async (tag?: string): Promise<GalleryImage[]> => {
+  try {
+    console.log(`Fetching gallery images from Supabase${tag ? ` with tag: ${tag}` : ''}...`);
+    
+    let query = supabase
+      .from('gallery_images')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    // If a tag is specified, filter by that tag
+    if (tag && tag !== 'all') {
+      query = query.contains('tags', [tag]);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching gallery images from Supabase:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn(`No gallery images found in Supabase${tag ? ` with tag: ${tag}` : ''}`);
+      return [];
+    }
+    
+    console.log(`Successfully fetched ${data.length} gallery images from Supabase`);
+    
+    // Transform the data to match our GalleryImage interface
+    const galleryImages: GalleryImage[] = data.map(image => ({
+      id: image.id,
+      public_id: image.public_id,
+      secure_url: image.secure_url || `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${image.public_id}`,
+      format: image.format || 'jpg',
+      width: image.width || 800,
+      height: image.height || 600,
+      created_at: image.created_at || new Date().toISOString(),
+      tags: Array.isArray(image.tags) ? image.tags : (image.tags ? [image.tags] : []),
+      alt: image.alt || 'Gallery Image',
+      title: image.title || 'Gallery Image'
+    }));
+    
+    return galleryImages;
+  } catch (error) {
+    console.error('Error in fetchGalleryImagesFromSupabase:', error);
+    return [];
+  }
+};
+
+// Fetch all unique tags from gallery images
+export const fetchGalleryTags = async (): Promise<string[]> => {
+  try {
+    console.log('Fetching gallery tags from Supabase...');
+    
+    const { data, error } = await supabase
+      .from('gallery_images')
+      .select('tags');
+    
+    if (error) {
+      console.error('Error fetching gallery tags from Supabase:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('No gallery images found in Supabase');
+      return [];
+    }
+    
+    // Extract all tags from all images and flatten the array
+    const allTags = data.flatMap(image => 
+      Array.isArray(image.tags) ? image.tags : (image.tags ? [image.tags] : [])
+    );
+    
+    // Remove duplicates and sort alphabetically
+    const uniqueTags = [...new Set(allTags)].sort();
+    
+    console.log(`Successfully fetched ${uniqueTags.length} unique gallery tags from Supabase`);
+    
+    return uniqueTags;
+  } catch (error) {
+    console.error('Error in fetchGalleryTags:', error);
+    return [];
   }
 }; 

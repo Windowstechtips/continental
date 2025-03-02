@@ -12,8 +12,11 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
+  Badge,
+  Tooltip,
+  alpha
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import HelpIcon from '@mui/icons-material/Help';
@@ -26,24 +29,16 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import SchoolIcon from '@mui/icons-material/School';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useState } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
+import { useState, useEffect } from 'react';
 import ContactDialog from './ContactDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
   onToggleTheme: () => void;
   isDark: boolean;
 }
-
-const pages = [
-  { name: 'Home', href: '#home' },
-  { name: 'Subjects', href: '#subjects' },
-  { name: 'Teachers', href: '#tutors' },
-  { name: 'Gallery', href: '#gallery' },
-  { name: 'News', href: '#news' },
-  { name: 'Store', href: '/store' },
-  { name: 'Contact', href: '#contact' },
-];
 
 const navItems = [
   { label: 'Home', href: '/', icon: <HomeIcon /> },
@@ -58,9 +53,25 @@ const navItems = [
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrolled]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -74,16 +85,38 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
     setContactOpen(false);
   };
 
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return location.pathname === '/' && !location.hash;
+    }
+    if (href.startsWith('/#')) {
+      const hash = href.substring(1);
+      if (location.pathname === '/') {
+        return location.hash === hash;
+      }
+      return false;
+    }
+    return location.pathname === href;
+  };
+
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
+    <Box sx={{ 
+      textAlign: 'center',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      background: theme.palette.mode === 'dark' 
+        ? 'linear-gradient(180deg, #132f4c 0%, #0a1929 100%)' 
+        : 'linear-gradient(180deg, #ffffff 0%, #f8faff 100%)',
+    }}>
       <Box
         sx={{
-          py: 2,
+          py: 3,
+          px: 2,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          borderBottom: 1,
+          justifyContent: 'space-between',
+          borderBottom: '1px solid',
           borderColor: 'divider',
         }}
       >
@@ -92,76 +125,168 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
           src="/misc/main.png"
           alt="Continental College"
           sx={{
-            height: { xs: 45, sm: 50 },
+            height: 50,
             width: 'auto',
             objectFit: 'contain',
             filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
           }}
         />
+        <IconButton 
+          edge="end" 
+          color="inherit" 
+          onClick={handleDrawerToggle}
+          sx={{
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.main, 0.2),
+            }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
       </Box>
-      <List>
-        {navItems.map((item) => (
-          <ListItem key={item.label} disablePadding>
+      
+      <List sx={{ flex: 1, py: 2 }}>
+        <AnimatePresence>
+          {navItems.map((item, index) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <ListItem disablePadding>
+                <ListItemButton
+                  sx={{ 
+                    textAlign: 'left',
+                    py: 1.5,
+                    px: 3,
+                    borderRadius: 2,
+                    mx: 1,
+                    mb: 0.5,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': isActive(item.href) ? {
+                      content: '""',
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '4px',
+                      backgroundColor: 'primary.main',
+                      borderRadius: '0 4px 4px 0',
+                    } : {},
+                    ...(isActive(item.href) && {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                    })
+                  }}
+                  href={item.href}
+                  onClick={handleDrawerToggle}
+                >
+                  <ListItemIcon sx={{ 
+                    minWidth: 40,
+                    color: isActive(item.href) ? 'primary.main' : 'text.secondary',
+                  }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.label} 
+                    primaryTypographyProps={{
+                      fontWeight: isActive(item.href) ? 600 : 400,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: navItems.length * 0.05 }}
+        >
+          <ListItem disablePadding>
             <ListItemButton
-              sx={{ textAlign: 'center' }}
-              href={item.href}
+              sx={{ 
+                textAlign: 'left',
+                py: 1.5,
+                px: 3,
+                borderRadius: 2,
+                mx: 1,
+                mb: 0.5,
+              }}
+              onClick={handleContactOpen}
             >
               <ListItemIcon sx={{ 
                 minWidth: 40,
                 color: 'primary.main',
-                justifyContent: 'center',
               }}>
-                {item.icon}
+                <ContactsIcon />
               </ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemText 
+                primary="Contact Us" 
+                primaryTypographyProps={{
+                  fontWeight: 500,
+                }}
+              />
             </ListItemButton>
           </ListItem>
-        ))}
-        <ListItem disablePadding>
-          <ListItemButton
-            sx={{ textAlign: 'center' }}
-            onClick={handleContactOpen}
-          >
-            <ListItemIcon sx={{ 
-              minWidth: 40,
-              color: 'primary.main',
-              justifyContent: 'center',
-            }}>
-              <ContactsIcon />
-            </ListItemIcon>
-            <ListItemText primary="Contact Us" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            sx={{ textAlign: 'center' }}
-            onClick={onToggleTheme}
-          >
-            <ListItemIcon sx={{ 
-              minWidth: 40,
-              color: 'primary.main',
-              justifyContent: 'center',
-            }}>
-              {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
-            </ListItemIcon>
-            <ListItemText primary={isDark ? "Light Mode" : "Dark Mode"} />
-          </ListItemButton>
-        </ListItem>
+        </motion.div>
       </List>
+      
+      <Box sx={{ 
+        p: 2, 
+        borderTop: '1px solid', 
+        borderColor: 'divider',
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onToggleTheme}
+          startIcon={isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+          sx={{ width: '100%' }}
+        >
+          {isDark ? "Light" : "Dark"}
+        </Button>
+      </Box>
     </Box>
   );
 
   return (
     <>
       <AppBar 
+        component={motion.div}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, type: 'spring', stiffness: 120 }}
         position="fixed" 
-        color="inherit" 
+        elevation={scrolled ? 4 : 0}
         sx={{ 
-          backgroundColor: theme.palette.mode === 'dark' ? 'background.paper' : 'white',
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? scrolled 
+              ? alpha(theme.palette.background.paper, 0.95)
+              : alpha(theme.palette.background.paper, 0.9)
+            : scrolled
+              ? alpha(theme.palette.background.paper, 0.95)
+              : alpha(theme.palette.background.paper, 0.9),
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease',
+          borderBottom: scrolled ? 'none' : '1px solid',
+          borderColor: alpha(theme.palette.divider, 0.1),
+          zIndex: 1100,
         }}
       >
-        <Container maxWidth={false}>
-          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 1, sm: 2 } }}>
+        <Container maxWidth="xl">
+          <Toolbar sx={{ 
+            justifyContent: 'space-between', 
+            px: { xs: 1, sm: 2 },
+            height: scrolled ? 56 : 64,
+            transition: 'height 0.3s ease',
+          }}>
             {/* Logo */}
             <Box
               sx={{
@@ -171,7 +296,9 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
                 textDecoration: 'none',
                 color: 'inherit',
               }}
-              component="a"
+              component={motion.a}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               href="#home"
             >
               <Box
@@ -179,110 +306,184 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
                 src="/misc/main.png"
                 alt="Continental College"
                 sx={{
-                  height: { xs: 45, sm: 50 },
+                  height: { xs: 45, sm: scrolled ? 45 : 50 },
                   width: 'auto',
                   objectFit: 'contain',
                   filter: theme.palette.mode === 'dark' ? 'brightness(0) invert(1)' : 'brightness(0)',
+                  transition: 'height 0.3s ease',
                 }}
               />
             </Box>
 
-            {/* Desktop Navigation */}
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
-              {navItems.map((item) => (
-                item.href.startsWith('/#') ? (
-                  <Button
-                    key={item.label}
-                    href={item.href.substring(1)}
-                    startIcon={item.icon}
-                    sx={{
-                      color: 'text.primary',
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ) : (
-                  <Button
-                    key={item.label}
-                    component={Link}
-                    to={item.href}
-                    startIcon={item.icon}
-                    sx={{
-                      color: 'text.primary',
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                )
-              ))}
-              <IconButton
-                color="inherit"
-                onClick={() => navigate(user ? '/account' : '/login')}
-                sx={{
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <AccountCircleIcon color={user ? "primary" : "inherit"} />
-              </IconButton>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<ContactsIcon />}
-                sx={{
-                  borderRadius: 25,
-                  px: 3,
-                }}
-                onClick={handleContactOpen}
-              >
-                Contact Us
-              </Button>
-              <IconButton 
-                sx={{ ml: 1 }} 
-                onClick={onToggleTheme} 
-                color="inherit"
-                aria-label="toggle dark mode"
-              >
-                {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
-              </IconButton>
+            {/* Mobile Menu Button */}
+            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <IconButton
+                  aria-label="open drawer"
+                  edge="start"
+                  onClick={handleDrawerToggle}
+                  sx={{ 
+                    ml: 2,
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: 'primary.main',
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.2),
+                    }
+                  }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              </motion.div>
             </Box>
 
-            {/* Mobile Menu Button */}
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="end"
-              onClick={handleDrawerToggle}
-              sx={{ display: { md: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
+            {/* Desktop Navigation */}
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' }, 
+              alignItems: 'center', 
+              gap: 0.5 
+            }}>
+              {navItems.map((item) => (
+                item.href.startsWith('/#') ? (
+                  <motion.div
+                    key={item.label}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ y: 0 }}
+                  >
+                    <Button
+                      href={item.href.substring(1)}
+                      startIcon={item.icon}
+                      sx={{
+                        color: isActive(item.href) ? 'primary.main' : 'text.primary',
+                        fontWeight: isActive(item.href) ? 600 : 400,
+                        mx: 0.5,
+                        px: 1.5,
+                        py: 1,
+                        borderRadius: 2,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::after': isActive(item.href) ? {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '30%',
+                          height: '3px',
+                          backgroundColor: 'primary.main',
+                          borderRadius: '3px 3px 0 0',
+                        } : {},
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={item.label}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ y: 0 }}
+                  >
+                    <Button
+                      component={Link}
+                      to={item.href}
+                      startIcon={item.icon}
+                      sx={{
+                        color: isActive(item.href) ? 'primary.main' : 'text.primary',
+                        fontWeight: isActive(item.href) ? 600 : 400,
+                        mx: 0.5,
+                        px: 1.5,
+                        py: 1,
+                        borderRadius: 2,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::after': isActive(item.href) ? {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: '30%',
+                          height: '3px',
+                          backgroundColor: 'primary.main',
+                          borderRadius: '3px 3px 0 0',
+                        } : {},
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  </motion.div>
+                )
+              ))}
+              
+              <Box sx={{ display: 'flex', ml: 1, gap: 1 }}>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<ContactsIcon />}
+                    sx={{
+                      borderRadius: 8,
+                      px: 2,
+                      py: 1,
+                      boxShadow: scrolled ? 2 : 0,
+                      background: 'linear-gradient(90deg, #0056b3, #0077cc)',
+                      '&:hover': {
+                        background: 'linear-gradient(90deg, #003b7a, #0056b3)',
+                      }
+                    }}
+                    onClick={handleContactOpen}
+                  >
+                    Contact Us
+                  </Button>
+                </motion.div>
+                
+                <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.5 }}>
+                  <Tooltip title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+                    <IconButton 
+                      sx={{ 
+                        ml: 1,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        color: 'primary.main',
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.primary.main, 0.2),
+                        }
+                      }} 
+                      onClick={onToggleTheme} 
+                    >
+                      {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+                    </IconButton>
+                  </Tooltip>
+                </motion.div>
+              </Box>
+            </Box>
           </Toolbar>
         </Container>
       </AppBar>
 
       {/* Mobile Drawer */}
       <Drawer
-        anchor="right"
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, // Better mobile performance
+          keepMounted: true, // Better open performance on mobile.
         }}
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { 
             boxSizing: 'border-box', 
-            width: 240,
-            backgroundColor: theme.palette.mode === 'dark' ? 'background.paper' : 'white',
+            width: 280,
+            borderRight: 'none',
+            boxShadow: 24,
           },
         }}
       >

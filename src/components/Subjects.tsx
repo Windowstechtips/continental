@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Typography, Card, CardContent } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import ScienceIcon from '@mui/icons-material/Science';
@@ -55,6 +55,7 @@ const subjects: Subject[] = [
 ];
 
 const Subjects = () => {
+  const theme = useTheme();
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subjectContents, setSubjectContents] = useState<SubjectContent[]>([]);
@@ -109,7 +110,29 @@ const Subjects = () => {
       id="subjects"
       sx={{
         py: { xs: 6, sm: 8 },
-        backgroundColor: theme => theme.palette.mode === 'dark' ? 'background.default' : '#f8f9fa',
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(18, 18, 18, 0.97)' 
+          : '#f8f9fa',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '6px',
+          background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '6px',
+          background: 'linear-gradient(90deg, #64b5f6, #0056b3)',
+        }
       }}
     >
       <Container maxWidth="xl">
@@ -124,8 +147,12 @@ const Subjects = () => {
             sx={{
               textAlign: 'center',
               mb: { xs: 4, sm: 6 },
-              color: 'primary.main',
-              fontSize: { xs: '2.25rem', sm: '2.5rem' },
+              fontSize: { xs: '2.25rem', sm: '2.75rem' },
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              px: { xs: 2, sm: 0 },
             }}
           >
             Our Subjects
@@ -140,29 +167,54 @@ const Subjects = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                whileHover={{ y: -10 }}
               >
                 <Card
                   sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'transform 0.2s ease-in-out',
                     cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: (theme) => theme.shadows[8],
-                    },
                     position: 'relative',
-                    overflow: 'hidden',
+                    overflow: 'visible',
+                    borderRadius: '12px',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 8px 32px rgba(0, 0, 0, 0.2)'
+                      : '0 8px 32px rgba(0, 0, 0, 0.05)',
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(30, 30, 35, 0.6)'
+                      : 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid',
+                    borderColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.05)',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: '4px',
-                      background: 'linear-gradient(90deg, #1976d2, #64b5f6)',
+                      height: '6px',
+                      background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
+                      borderRadius: '12px 12px 0 0',
                     },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: -5,
+                      left: -5,
+                      right: -5,
+                      bottom: -5,
+                      background: 'linear-gradient(135deg, rgba(0,86,179,0.2) 0%, rgba(100,181,246,0.2) 100%)',
+                      borderRadius: '16px',
+                      opacity: 0,
+                      zIndex: -1,
+                      transition: 'opacity 0.3s ease',
+                    },
+                    '&:hover::after': {
+                      opacity: 1,
+                    }
                   }}
                   onClick={() => handleSubjectClick(subject)}
                 >
@@ -176,26 +228,33 @@ const Subjects = () => {
                         height: '100%',
                       }}
                     >
-                      <Box
-                        sx={{
-                          width: 100,
-                          height: 100,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
-                          mb: 2,
-                        }}
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
                       >
-                        <subject.icon sx={{ fontSize: '3rem', color: 'white' }} />
-                      </Box>
+                        <Box
+                          sx={{
+                            width: 100,
+                            height: 100,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+                            mb: 2,
+                            boxShadow: '0 8px 16px rgba(0, 86, 179, 0.3)',
+                          }}
+                        >
+                          <subject.icon sx={{ fontSize: '3rem', color: 'white' }} />
+                        </Box>
+                      </motion.div>
                       <Typography
                         variant="h5"
                         component="h3"
                         sx={{
                           textAlign: 'center',
                           fontWeight: 600,
+                          color: theme.palette.text.primary,
                         }}
                       >
                         {subject.name}

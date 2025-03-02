@@ -12,6 +12,7 @@ export interface TeacherContent {
   qualifications: string[];
   description: string;
   picture_id: string | null;
+  cloudinary_url: string | null;
   grade: string | null;
   syllabus: string | null;
 } 

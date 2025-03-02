@@ -67,7 +67,7 @@ const NewsTicker = () => {
           height: 40,
           backgroundColor: theme.palette.primary.main,
           color: '#fff',
-          zIndex: 1000,
+          zIndex: 1150,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -88,7 +88,7 @@ const NewsTicker = () => {
         height: 40,
         backgroundColor: theme.palette.primary.main,
         color: '#fff',
-        zIndex: 1000,
+        zIndex: 1150,
         display: 'flex',
         alignItems: 'center',
       }}
@@ -178,7 +178,7 @@ const NewsTicker = () => {
             display: 'flex',
             alignItems: 'center',
             whiteSpace: 'nowrap',
-            paddingLeft: { xs: '8px', sm: '24px' },
+            paddingLeft: '24px',
           }}
         >
           <Typography

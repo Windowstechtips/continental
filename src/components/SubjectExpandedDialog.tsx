@@ -87,10 +87,17 @@ const SubjectExpandedDialog = ({ open, onClose, subject }: SubjectExpandedDialog
           PaperProps={{
             sx: {
               borderRadius: 2,
-              bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : '#ffffff',
+              bgcolor: theme.palette.mode === 'dark' ? 'rgba(30, 30, 35, 0.95)' : '#ffffff',
               overflow: 'hidden',
               margin: { xs: 2, sm: 3, md: 4 },
               maxHeight: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 48px)', md: 'calc(100% - 64px)' },
+              boxShadow: theme.palette.mode === 'dark' 
+                ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
+                : '0 8px 32px rgba(0, 0, 0, 0.1)',
+              border: '1px solid',
+              borderColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(0, 0, 0, 0.05)',
             },
             component: motion.div,
             initial: { opacity: 0, scale: 0.8, y: 60 },
@@ -146,7 +153,7 @@ const SubjectExpandedDialog = ({ open, onClose, subject }: SubjectExpandedDialog
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3, delay: 0.2 }}
               sx={{
-                background: 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
+                background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
                 p: { xs: 2, sm: 3, md: 4 },
                 position: 'relative',
                 '&::before': {
@@ -201,73 +208,102 @@ const SubjectExpandedDialog = ({ open, onClose, subject }: SubjectExpandedDialog
 
             <DialogContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 40 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
               >
-                <Typography variant="h5" gutterBottom sx={{ mb: 2, color: 'primary.main', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                  About {subject.name}
-                </Typography>
-                {subject.content ? (
-                  <>
-                    {renderFormattedDescription(subject.content.subject_description)}
+                {/* Content */}
+                <Box sx={{ mb: 4 }}>
+                  {subject.content?.subject_description && renderFormattedDescription(subject.content.subject_description)}
+                </Box>
 
+                {/* Syllabus */}
+                {subject.content?.whatsapp_link && (
+                  <Box sx={{ mb: 4 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                        fontWeight: 700,
+                        mb: 2,
+                        background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Additional Resources
+                    </Typography>
                     <Box sx={{ 
-                      mt: { xs: 3, sm: 4 }, 
-                      display: 'flex', 
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      justifyContent: 'center', 
-                      gap: { xs: 1.5, sm: 2 }
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: theme.palette.mode === 'dark' 
+                        ? 'rgba(0, 0, 0, 0.2)' 
+                        : 'rgba(0, 86, 179, 0.05)',
+                      border: '1px solid',
+                      borderColor: theme.palette.mode === 'dark' 
+                        ? 'rgba(255, 255, 255, 0.1)' 
+                        : 'rgba(0, 86, 179, 0.1)',
                     }}>
-                      <Button
-                        variant="contained"
-                        size="large"
-                        onClick={handleViewTeachers}
-                        fullWidth={false}
-                        sx={{
-                          px: { xs: 3, sm: 4 },
-                          py: 1.5,
-                          fontSize: { xs: '1rem', sm: '1.1rem' },
-                          borderRadius: 30,
-                          boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                          '&:hover': {
-                            boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
-                          },
-                          minWidth: { xs: '100%', sm: 'auto' },
-                        }}
-                      >
-                        View Teachers
-                      </Button>
-                      {subject.content.whatsapp_link && (
-                        <Button
-                          variant="contained"
-                          size="large"
-                          startIcon={<WhatsAppIcon />}
-                          fullWidth={false}
-                          sx={{
-                            px: { xs: 3, sm: 4 },
-                            py: 1.5,
-                            fontSize: { xs: '1rem', sm: '1.1rem' },
-                            borderRadius: 30,
-                            bgcolor: '#25D366',
-                            '&:hover': {
-                              bgcolor: '#128C7E',
-                            },
-                            minWidth: { xs: '100%', sm: 'auto' },
-                          }}
-                          onClick={() => window.open(subject.content.whatsapp_link || '', '_blank')}
-                        >
-                          Join {subject.name} WhatsApp Group
-                        </Button>
-                      )}
+                      <Typography variant="body1">
+                        Join our WhatsApp group for additional resources and updates about this subject.
+                      </Typography>
                     </Box>
-                  </>
-                ) : (
-                  <Typography variant="body1" color="text.secondary">
-                    No information available for this subject yet.
-                  </Typography>
+                  </Box>
                 )}
+
+                {/* Call to Action */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: 2,
+                  mt: 4,
+                  pt: 3,
+                  borderTop: '1px solid',
+                  borderColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.1)' 
+                    : 'rgba(0, 0, 0, 0.1)',
+                }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleViewTeachers}
+                    sx={{
+                      borderRadius: 8,
+                      px: 3,
+                      py: 1,
+                      background: 'linear-gradient(90deg, #0056b3, #0077cc)',
+                      '&:hover': {
+                        background: 'linear-gradient(90deg, #003b7a, #0056b3)',
+                      },
+                      boxShadow: '0 4px 8px rgba(0, 86, 179, 0.3)',
+                    }}
+                  >
+                    View Teachers
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    startIcon={<WhatsAppIcon />}
+                    href={subject.content?.whatsapp_link || "https://wa.me/94777777777"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      borderRadius: 8,
+                      px: 3,
+                      py: 1,
+                      borderColor: '#25D366',
+                      color: '#25D366',
+                      '&:hover': {
+                        borderColor: '#25D366',
+                        bgcolor: 'rgba(37, 211, 102, 0.1)',
+                      },
+                    }}
+                  >
+                    Join WhatsApp Group
+                  </Button>
+                </Box>
               </motion.div>
             </DialogContent>
           </motion.div>

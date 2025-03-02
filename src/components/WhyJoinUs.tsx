@@ -42,7 +42,7 @@ const WhyJoinUs = () => {
       sx={{ 
         py: { xs: 6, sm: 8 },
         width: '100%',
-        backgroundColor: theme.palette.mode === 'dark' ? 'background.paper' : '#f8f9fa',
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.97)' : '#f8f9fa',
         overflowX: 'hidden',
       }}
     >
@@ -64,8 +64,11 @@ const WhyJoinUs = () => {
             sx={{
               textAlign: 'center',
               mb: { xs: 4, sm: 6 },
-              color: 'primary.main',
-              fontSize: { xs: '2rem', sm: '2.5rem' },
+              fontSize: { xs: '2.25rem', sm: '2.75rem' },
+              fontWeight: 800,
+              background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
               px: { xs: 2, sm: 0 },
             }}
           >
