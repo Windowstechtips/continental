@@ -15,6 +15,8 @@ import Store from './components/Store';
 import { CartProvider } from './contexts/CartContext';
 import Checkout from './components/Checkout';
 import { AuthProvider } from './contexts/AuthContext';
+import { CurriculumProvider } from './contexts/CurriculumContext';
+import CurriculumSelectionDialog from './components/CurriculumSelectionDialog';
 import Account from './components/Account';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -33,17 +35,39 @@ declare global {
 }
 
 // Home component to wrap the main page content
-const Home = () => (
-  <>
-    <Hero />
-    <WhyJoinUs />
-    <Subjects />
-    <TutorCarousel />
-    <News />
-    <Gallery />
-    <Calendar />
-  </>
-);
+const Home = () => {
+  const [showCurriculumDialog, setShowCurriculumDialog] = useState(false);
+  
+  useEffect(() => {
+    // Check if curriculum preferences are already set
+    const hasCurriculum = localStorage.getItem('curriculum');
+    const hasLevel = localStorage.getItem('level');
+    const hasGrade = localStorage.getItem('grade');
+    
+    if (!hasCurriculum || !hasLevel || !hasGrade) {
+      setShowCurriculumDialog(true);
+    }
+  }, []);
+  
+  const handleDialogClose = (selectedData?: { curriculum: string; level: string; grade: string }) => {
+    setShowCurriculumDialog(false);
+  };
+  
+  return (
+    <>
+      <Hero />
+      <WhyJoinUs />
+      <Subjects />
+      <TutorCarousel />
+      <News />
+      <Gallery />
+      <CurriculumSelectionDialog 
+        open={showCurriculumDialog}
+        onClose={handleDialogClose}
+      />
+    </>
+  );
+};
 
 // Layout component to handle conditional rendering of Navbar and NewsTicker
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
@@ -541,88 +565,91 @@ function App() {
   }), [mode]);
 
   const toggleColorMode = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
+    localStorage.setItem('colorMode', mode === 'light' ? 'dark' : 'light');
   };
 
-  // Add toggleColorMode and isDark to window for Layout component
-  window.toggleColorMode = toggleColorMode;
-  window.isDark = mode === 'dark';
-
-  if (initError) {
-    return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '100vh',
-            p: 3,
-          }}
-        >
-          <Paper
-            elevation={3}
-            sx={{
-              p: 4,
-              maxWidth: 500,
-              width: '100%',
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant="h5" color="error" gutterBottom>
-              Application Error
-            </Typography>
-            <Typography color="text.secondary">
-              {initError}
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={() => window.location.reload()}
-              sx={{ mt: 3 }}
-            >
-              Retry
-            </Button>
-          </Paper>
-        </Box>
-      </ThemeProvider>
-    );
-  }
+  // Set toggleColorMode and isDark on window object
+  useEffect(() => {
+    window.toggleColorMode = toggleColorMode;
+    window.isDark = mode === 'dark';
+  }, [mode]);
 
   return (
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <CurriculumProvider>
           <CartProvider>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              minHeight: '100vh',
-              width: '100vw',
-              overflow: 'hidden',
-              backgroundColor: theme.palette.background.default,
-              fontFamily: '"Google Sans", "Inter", system-ui, -apple-system, sans-serif',
-            }}>
-              <Routes>
-                {/* Account routes with AccountLayout */}
-                <Route path="/account" element={<AccountLayout><Account /></AccountLayout>} />
-                <Route path="/login" element={<AccountLayout><Login /></AccountLayout>} />
-                <Route path="/register" element={<AccountLayout><Register /></AccountLayout>} />
-                
-                {/* Main routes with MainLayout */}
-                <Route path="/" element={<MainLayout><Home /></MainLayout>} />
-                <Route path="/store" element={<MainLayout><Store /></MainLayout>} />
-                <Route path="/checkout" element={<MainLayout><Checkout /></MainLayout>} />
-                <Route path="/payment/success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
-                <Route path="/payment/cancel" element={<MainLayout><PaymentCancel /></MainLayout>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
+            <BrowserRouter>
+              {initError ? (
+                <Box sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '100vh',
+                  p: 3,
+                  textAlign: 'center'
+                }}>
+                  <Paper sx={{
+                    p: 4,
+                    borderRadius: 2,
+                    maxWidth: 600,
+                    boxShadow: 4,
+                    backgroundColor: 'background.paper'
+                  }}>
+                    <Typography variant="h5" color="error" gutterBottom>
+                      Connection Error
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 3 }}>
+                      {initError}
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      onClick={() => window.location.reload()}
+                    >
+                      Try Again
+                    </Button>
+                  </Paper>
+                </Box>
+              ) : (
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  minHeight: '100vh',
+                  width: '100vw',
+                  overflow: 'hidden',
+                  backgroundColor: mode === 'light' ? '#f8faff' : '#121212',
+                  fontFamily: '"Proxima Nova", system-ui, -apple-system, sans-serif',
+                }}>
+                  <Routes>
+                    {/* Account routes with AccountLayout */}
+                    <Route path="/login" element={<AccountLayout><Login /></AccountLayout>} />
+                    <Route path="/register" element={<AccountLayout><Register /></AccountLayout>} />
+                    <Route path="/account" element={<AccountLayout><Account /></AccountLayout>} />
+                    
+                    {/* Store routes with MainLayout */}
+                    <Route path="/store" element={<MainLayout><Store /></MainLayout>} />
+                    <Route path="/checkout" element={<MainLayout><Checkout /></MainLayout>} />
+                    
+                    {/* Payment routes */}
+                    <Route path="/payment/success" element={<MainLayout><PaymentSuccess /></MainLayout>} />
+                    <Route path="/payment/cancel" element={<MainLayout><PaymentCancel /></MainLayout>} />
+                    
+                    {/* Home route */}
+                    <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+                    
+                    {/* Fallback route */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </div>
+              )}
+            </BrowserRouter>
           </CartProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+        </CurriculumProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

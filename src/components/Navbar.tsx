@@ -47,7 +47,7 @@ const navItems = [
   { label: 'Teachers', href: '/#tutors', icon: <PeopleIcon /> },
   { label: 'News', href: '/#news', icon: <NewspaperIcon /> },
   { label: 'Gallery', href: '/#gallery', icon: <CollectionsIcon /> },
-  { label: 'Store', href: '/store', icon: <ShoppingCartIcon /> },
+  // { label: 'Store', href: '/store', icon: <ShoppingCartIcon /> }, // Temporarily hidden
 ];
 
 const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {

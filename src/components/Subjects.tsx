@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import SubjectExpandedDialog from './SubjectExpandedDialog';
 import { fetchSubjectsContent } from '../services/supabase';
 import type { SubjectContent } from '../types/database.types';
+import { useCurriculum } from '../contexts/CurriculumContext';
 
 interface Subject {
   name: string;
@@ -59,6 +60,7 @@ const Subjects = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subjectContents, setSubjectContents] = useState<SubjectContent[]>([]);
+  const { curriculum, level, grade } = useCurriculum();
 
   // Fetch subject contents when component mounts
   useEffect(() => {
@@ -146,7 +148,7 @@ const Subjects = () => {
             variant="h2"
             sx={{
               textAlign: 'center',
-              mb: { xs: 4, sm: 6 },
+              mb: { xs: 2, sm: 3 },
               fontSize: { xs: '2.25rem', sm: '2.75rem' },
               fontWeight: 800,
               background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
@@ -157,6 +159,20 @@ const Subjects = () => {
           >
             Our Subjects
           </Typography>
+          
+          {/* Display curriculum and grade selection */}
+          {curriculum && level && grade && (
+            <Typography
+              variant="h5"
+              sx={{
+                textAlign: 'center',
+                mb: { xs: 4, sm: 6 },
+                color: 'text.secondary',
+              }}
+            >
+              {curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} Curriculum - {level} (Grade {grade})
+            </Typography>
+          )}
         </motion.div>
 
         <Grid container spacing={4}>
@@ -267,13 +283,12 @@ const Subjects = () => {
           ))}
         </Grid>
 
-        {selectedSubject && (
-          <SubjectExpandedDialog
-            open={Boolean(selectedSubject)}
-            onClose={handleCloseDialog}
-            subject={selectedSubject}
-          />
-        )}
+        <SubjectExpandedDialog
+          open={!!selectedSubject}
+          subject={selectedSubject || undefined}
+          onClose={handleCloseDialog}
+          loading={isLoading}
+        />
       </Container>
     </Box>
   );

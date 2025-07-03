@@ -12,7 +12,8 @@ interface SubjectExpandedDialogProps {
     name: string;
     icon: SvgIconComponent;
     content?: SubjectContent;
-  };
+  } | null;
+  loading?: boolean;
 }
 
 const renderFormattedDescription = (text: string) => {
@@ -60,7 +61,7 @@ const renderFormattedDescription = (text: string) => {
   });
 };
 
-const SubjectExpandedDialog = ({ open, onClose, subject }: SubjectExpandedDialogProps) => {
+const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: SubjectExpandedDialogProps) => {
   const theme = useTheme();
 
   const handleViewTeachers = () => {
@@ -71,8 +72,8 @@ const SubjectExpandedDialog = ({ open, onClose, subject }: SubjectExpandedDialog
     }
   };
 
-  // Early return if no content
-  if (!subject.content) {
+  // Early return if no subject or content
+  if (!subject || !subject.content) {
     return null;
   }
 
