@@ -63,6 +63,8 @@ const renderFormattedDescription = (text: string) => {
 
 const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: SubjectExpandedDialogProps) => {
   const theme = useTheme();
+  
+  console.log('SubjectExpandedDialog rendered with props:', { open, subject, loading });
 
   const handleViewTeachers = () => {
     onClose();
@@ -72,10 +74,13 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
     }
   };
 
-  // Early return if no subject or content
-  if (!subject || !subject.content) {
+  // Early return if no subject
+  if (!subject) {
+    console.log('SubjectExpandedDialog: No subject provided');
     return null;
   }
+
+  console.log('SubjectExpandedDialog: Rendering dialog with subject:', subject);
 
   return (
     <AnimatePresence mode="wait">
@@ -106,25 +111,6 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
             exit: { opacity: 0, scale: 0.8, y: 60 },
             transition: { duration: 0.4, ease: "easeOut" }
           }}
-          sx={{
-            '& .MuiDialogContent-root': {
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '8px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                borderRadius: '4px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                borderRadius: '4px',
-                '&:hover': {
-                  background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                },
-              },
-            },
-          }}
         >
           <IconButton
             aria-label="close"
@@ -133,7 +119,7 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
               position: 'absolute',
               right: { xs: 4, sm: 8 },
               top: { xs: 4, sm: 8 },
-              color: 'white',
+              color: 'text.primary',
               zIndex: 1,
             }}
           >
@@ -148,11 +134,6 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
           >
             {/* Header with gradient background */}
             <Box
-              component={motion.div}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
               sx={{
                 background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
                 p: { xs: 2, sm: 3, md: 4 },
@@ -214,97 +195,39 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
               >
-                {/* Content */}
-                <Box sx={{ mb: 4 }}>
-                  {subject.content?.subject_description && renderFormattedDescription(subject.content.subject_description)}
-                </Box>
-
-                {/* Syllabus */}
-                {subject.content?.whatsapp_link && (
+                {/* Description */}
+                {subject.content?.subject_description && (
                   <Box sx={{ mb: 4 }}>
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                        fontWeight: 700,
-                        mb: 2,
-                        background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                      }}
-                    >
-                      Additional Resources
-                    </Typography>
-                    <Box sx={{ 
-                      p: 2, 
-                      borderRadius: 2, 
-                      bgcolor: theme.palette.mode === 'dark' 
-                        ? 'rgba(0, 0, 0, 0.2)' 
-                        : 'rgba(0, 86, 179, 0.05)',
-                      border: '1px solid',
-                      borderColor: theme.palette.mode === 'dark' 
-                        ? 'rgba(255, 255, 255, 0.1)' 
-                        : 'rgba(0, 86, 179, 0.1)',
-                    }}>
-                      <Typography variant="body1">
-                        Join our WhatsApp group for additional resources and updates about this subject.
-                      </Typography>
-                    </Box>
+                    {renderFormattedDescription(subject.content.subject_description)}
                   </Box>
                 )}
 
-                {/* Call to Action */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: 2,
-                  mt: 4,
-                  pt: 3,
-                  borderTop: '1px solid',
-                  borderColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.1)' 
-                    : 'rgba(0, 0, 0, 0.1)',
-                }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleViewTeachers}
-                    sx={{
-                      borderRadius: 8,
-                      px: 3,
-                      py: 1,
-                      background: 'linear-gradient(90deg, #0056b3, #0077cc)',
-                      '&:hover': {
-                        background: 'linear-gradient(90deg, #003b7a, #0056b3)',
-                      },
-                      boxShadow: '0 4px 8px rgba(0, 86, 179, 0.3)',
-                    }}
-                  >
-                    View Teachers
-                  </Button>
-                  
-                  <Button
-                    variant="outlined"
-                    startIcon={<WhatsAppIcon />}
-                    href={subject.content?.whatsapp_link || "https://wa.me/94777777777"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      borderRadius: 8,
-                      px: 3,
-                      py: 1,
-                      borderColor: '#25D366',
-                      color: '#25D366',
-                      '&:hover': {
-                        borderColor: '#25D366',
-                        bgcolor: 'rgba(37, 211, 102, 0.1)',
-                      },
-                    }}
-                  >
-                    Join WhatsApp Group
-                  </Button>
-                </Box>
+                {/* WhatsApp Link */}
+                {subject.content?.whatsapp_link && (
+                  <Box sx={{ mt: 4 }}>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<WhatsAppIcon />}
+                      href={subject.content.whatsapp_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      fullWidth
+                      sx={{
+                        py: 1.5,
+                        borderRadius: 2,
+                        fontSize: '1rem',
+                        textTransform: 'none',
+                        bgcolor: '#25D366',
+                        '&:hover': {
+                          bgcolor: '#128C7E'
+                        }
+                      }}
+                    >
+                      Join WhatsApp Group for Updates
+                    </Button>
+                  </Box>
+                )}
               </motion.div>
             </DialogContent>
           </motion.div>

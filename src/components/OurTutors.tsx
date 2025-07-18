@@ -1,105 +1,49 @@
-import { Box, Container, Grid, Typography, Card, CardContent, useTheme, Avatar, Chip } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme, Avatar, Chip, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
-
-const tutors = [
-  {
-    name: 'Isuru Hewage',
-    subject: 'Mathematics',
-    qualifications: [
-      'BCS - University of colombo',
-      'MSC in Mathematics Teaching - University of Colombo',
-      '18+ Years of mathematics teaching experience in edexcel and cambridge',
-      '8+ Years as a school teacher in Lyceum International School Nugegoda'
-    ],
-  },
-  {
-    name: 'Arosha Senevirathne',
-    subject: 'Chemistry',
-    qualifications: [
-      'BSc (Hons) Special in Chemistry (Top of the Batch, University of Jaffna)',
-      'MSc in Chemistry Education (Reading, University of Colombo)',
-      'Over 7 years of teaching experience',
-      'Leading Chemistry teacher in Nugegoda and Kurunegala areas'
-    ],
-  },
-  {
-    name: 'Chatura Wijenaike',
-    subject: 'English Literature and Language',
-    qualifications: [
-      'BA in English (USJP)',
-      'MA in Linguistics (University of Kelaniya)',
-      'National Diploma in English (Advanced Technical Institute)'
-    ],
-  },
-  {
-    name: 'Hashini Perera',
-    subject: 'Economics, Business Studies, Commerce',
-    qualifications: [
-      'CIMA Passed Finalist (Chartered Institute of Management Accountants)',
-      'CIM Passed Finalist (Chartered Institute of Marketing)',
-      'Former Auditor at KPMG',
-      'Over 5+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Tilak Gunaratne',
-    subject: 'Accounting',
-    qualifications: [
-      'Fellow Member of the Institute of Chartered Accountants (CA)',
-      'Associate Member of ICMA',
-      'Reading MBA at PIM',
-      'Former Director of Finance and Commercial Operations of the Sri Lanka branch of a Singapore-based company',
-      'Over 7+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Chathura Fernando',
-    subject: 'Biology',
-    qualifications: [
-      'B.Sc. (Hons) Biomedical (Top of Batch)',
-      'M.Sc. Education',
-      'Former Biology Teacher at Lyceum International School, Wattala',
-      'Currently Coordinator of Biology at OKI International School, Kandana branch',
-      'Visiting Lecturer for Biomedical Science for MSU and IIHS',
-      'Over 6+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Roshan Jayawardana',
-    subject: 'Computer Science',
-    qualifications: [
-      'B.Sc. (Hons) in IT (University of Moratuwa)',
-      'M.Sc. (University of Colombo)',
-      'Former Full-Time Lecturer at SLIIT',
-      'Currently Visiting Lecturer at SLIIT',
-      'Professional Member of the Computer Society of Sri Lanka',
-      'Over 12+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Rohab Allang',
-    subject: 'Physics',
-    qualifications: [
-      'B.Sc. (Hons) in Aircraft Maintenance Engineering (General Sir John Kotelawala Defense University)',
-      '6 months training in Sri Lankan Airlines (B1.1 Engineering)',
-      'Over 3+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-  {
-    name: 'Shehan Cooray',
-    subject: 'Physics',
-    qualifications: [
-      'Bachelor of Engineering (First Class) from the University of Bolton',
-      'Full-Time Physics Teacher at a leading international school',
-      'Full-Time Physics Lecturer at Pathfinder Academy, Ja-Ela',
-      'Associate Member of IIESL and ECSL',
-      'Over 8+ years of teaching Edexcel/Cambridge curriculum'
-    ],
-  },
-];
+import { useState, useEffect } from 'react';
+import { fetchTeachersContent } from '../services/supabase';
+import { TeacherContent } from '../types/database.types';
+import { useCurriculum } from '../contexts/CurriculumContext';
 
 const OurTutors = () => {
   const theme = useTheme();
+  const { curriculum, selectedGrade } = useCurriculum();
+  const [teachers, setTeachers] = useState<TeacherContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTeachers = async () => {
+      try {
+        const teachersData = await fetchTeachersContent();
+        console.log('Loaded teachers:', teachersData);
+        setTeachers(teachersData);
+      } catch (error) {
+        console.error('Error loading teachers:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTeachers();
+  }, []);
+
+  // Filter teachers based on curriculum and selected grade
+  const filteredTeachers = teachers.filter(teacher => 
+    teacher.syllabus?.toLowerCase() === curriculum.toLowerCase() &&
+    teacher.grade === selectedGrade
+  );
+
+  // Log filtering results for debugging
+  console.log('Filtering teachers:', {
+    currentCurriculum: curriculum,
+    currentGrade: selectedGrade,
+    totalTeachers: teachers.length,
+    filteredTeachers: filteredTeachers.length,
+    teachers: teachers.map(t => ({
+      name: t.teacher_name,
+      syllabus: t.syllabus,
+      grade: t.grade
+    }))
+  });
 
   return (
     <Box 
@@ -128,17 +72,60 @@ const OurTutors = () => {
             variant="h2"
             sx={{
               textAlign: 'center',
-              mb: 6,
+              mb: 3,
               color: 'primary.main',
             }}
           >
             Our Expert Tutors
           </Typography>
+
+          {/* Display curriculum and grade selection as pills */}
+          {curriculum && selectedGrade && (
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              sx={{ mb: 6 }}
+            >
+              <Chip
+                label={`Grade ${selectedGrade}`}
+                color="primary"
+                sx={{
+                  borderRadius: '16px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              />
+              <Chip
+                label={curriculum.charAt(0).toUpperCase() + curriculum.slice(1)}
+                color="secondary"
+                sx={{
+                  borderRadius: '16px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              />
+            </Stack>
+          )}
+
+          {/* Show message when no teachers match the filter */}
+          {filteredTeachers.length === 0 && !isLoading && (
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: 'center',
+                mb: 3,
+                color: 'text.secondary',
+              }}
+            >
+              No tutors available for {curriculum} Grade {selectedGrade}.
+            </Typography>
+          )}
         </motion.div>
 
         <Grid container spacing={4} justifyContent="center">
-          {tutors.map((tutor, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+          {filteredTeachers.map((teacher, index) => (
+            <Grid item xs={12} sm={6} md={4} key={teacher.id}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -169,22 +156,29 @@ const OurTutors = () => {
                 >
                   <CardContent>
                     <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar 
-                        sx={{ 
-                          width: 60, 
-                          height: 60, 
-                          bgcolor: 'primary.main',
-                          fontSize: '1.5rem',
-                        }}
-                      >
-                        {tutor.name.split(' ').map(n => n[0]).join('')}
-                      </Avatar>
+                      {teacher.cloudinary_url ? (
+                        <Avatar 
+                          src={teacher.cloudinary_url}
+                          sx={{ width: 60, height: 60 }}
+                        />
+                      ) : (
+                        <Avatar 
+                          sx={{ 
+                            width: 60, 
+                            height: 60, 
+                            bgcolor: 'primary.main',
+                            fontSize: '1.5rem',
+                          }}
+                        >
+                          {teacher.teacher_name.split(' ').map(n => n[0]).join('')}
+                        </Avatar>
+                      )}
                       <Box>
                         <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          {tutor.name}
+                          {teacher.teacher_name}
                         </Typography>
                         <Chip 
-                          label={tutor.subject} 
+                          label={teacher.subject_name} 
                           color="primary" 
                           size="small"
                           sx={{ fontWeight: 500 }}
@@ -192,7 +186,7 @@ const OurTutors = () => {
                       </Box>
                     </Box>
                     <Box sx={{ mt: 2 }}>
-                      {tutor.qualifications.map((qualification, idx) => (
+                      {teacher.qualifications.map((qualification, idx) => (
                         <Typography 
                           key={idx} 
                           variant="body2" 

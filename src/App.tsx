@@ -15,7 +15,7 @@ import Store from './components/Store';
 import { CartProvider } from './contexts/CartContext';
 import Checkout from './components/Checkout';
 import { AuthProvider } from './contexts/AuthContext';
-import { CurriculumProvider } from './contexts/CurriculumContext';
+import { CurriculumProvider, useCurriculum } from './contexts/CurriculumContext';
 import CurriculumSelectionDialog from './components/CurriculumSelectionDialog';
 import Account from './components/Account';
 import Login from './components/Login';
@@ -37,19 +37,25 @@ declare global {
 // Home component to wrap the main page content
 const Home = () => {
   const [showCurriculumDialog, setShowCurriculumDialog] = useState(false);
+  const { isInitialized, curriculum, selectedGrade } = useCurriculum();
   
+  // Force show dialog on component mount if curriculum is not set
   useEffect(() => {
-    // Check if curriculum preferences are already set
     const hasCurriculum = localStorage.getItem('curriculum');
-    const hasLevel = localStorage.getItem('level');
-    const hasGrade = localStorage.getItem('grade');
+    const hasGrade = localStorage.getItem('selectedGrade');
     
-    if (!hasCurriculum || !hasLevel || !hasGrade) {
+    // Show dialog on first load if curriculum or grade is not set
+    if (isInitialized && (!curriculum || !selectedGrade)) {
+      console.log('Showing curriculum dialog - missing curriculum or grade');
+      setShowCurriculumDialog(true);
+    } else if (!hasCurriculum || !hasGrade) {
+      console.log('Showing curriculum dialog - no localStorage data');
       setShowCurriculumDialog(true);
     }
-  }, []);
+  }, [isInitialized, curriculum, selectedGrade]);
   
-  const handleDialogClose = (selectedData?: { curriculum: string; level: string; grade: string }) => {
+  const handleDialogClose = (selectedData?: { curriculum: string; selectedGrade: string }) => {
+    console.log('Dialog closed with selection:', selectedData);
     setShowCurriculumDialog(false);
   };
   

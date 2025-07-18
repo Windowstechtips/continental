@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Typography, Card, CardContent, useTheme } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme, Chip, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import ScienceIcon from '@mui/icons-material/Science';
@@ -60,7 +60,7 @@ const Subjects = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subjectContents, setSubjectContents] = useState<SubjectContent[]>([]);
-  const { curriculum, level, grade } = useCurriculum();
+  const { curriculum, selectedGrade } = useCurriculum();
 
   // Fetch subject contents when component mounts
   useEffect(() => {
@@ -76,31 +76,24 @@ const Subjects = () => {
     loadSubjectContents();
   }, []);
 
-  const handleSubjectClick = async (subject: Subject) => {
-    setIsLoading(true);
-    try {
-      // Find the matching content from our fetched data
-      const content = subjectContents.find(
-        content => content.subject_name.toLowerCase() === subject.name.toLowerCase()
-      );
-      
-      console.log('Selected subject:', subject.name);
-      console.log('Found content:', content);
-      
-      if (content) {
-        setSelectedSubject({
-          ...subject,
-          content
-        });
-      } else {
-        console.warn(`No content found for subject: ${subject.name}`);
-        setSelectedSubject(subject);
-      }
-    } catch (error) {
-      console.error('Error handling subject click:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  // Filter subjects based on curriculum and selected grade
+  const filteredSubjects = subjects.map(subject => {
+    const content = subjectContents.find(
+      content => content.subject_name.toLowerCase() === subject.name.toLowerCase()
+    );
+    return {
+      ...subject,
+      content
+    };
+  }).filter(subject => {
+    if (!subject.content) return true; // Show all subjects if no content is found
+    return subject.content.syllabus?.toLowerCase() === curriculum.toLowerCase() &&
+           subject.content.grade === selectedGrade;
+  });
+
+  const handleSubjectClick = (subject: Subject) => {
+    console.log('handleSubjectClick called with:', subject);
+    setSelectedSubject(subject);
   };
 
   const handleCloseDialog = () => {
@@ -160,23 +153,38 @@ const Subjects = () => {
             Our Subjects
           </Typography>
           
-          {/* Display curriculum and grade selection */}
-          {curriculum && level && grade && (
-            <Typography
-              variant="h5"
-              sx={{
-                textAlign: 'center',
-                mb: { xs: 4, sm: 6 },
-                color: 'text.secondary',
-              }}
+          {/* Display curriculum and grade selection as pills */}
+          {curriculum && selectedGrade && (
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="center"
+              sx={{ mb: { xs: 4, sm: 6 } }}
             >
-              {curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} Curriculum - {level} (Grade {grade})
-            </Typography>
+              <Chip
+                label={`Grade ${selectedGrade}`}
+                color="primary"
+                sx={{
+                  borderRadius: '16px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              />
+              <Chip
+                label={curriculum.charAt(0).toUpperCase() + curriculum.slice(1)}
+                color="secondary"
+                sx={{
+                  borderRadius: '16px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                }}
+              />
+            </Stack>
           )}
         </motion.div>
 
         <Grid container spacing={4}>
-          {subjects.map((subject, index) => (
+          {filteredSubjects.map((subject, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -186,6 +194,9 @@ const Subjects = () => {
                 whileHover={{ y: -10 }}
               >
                 <Card
+                  onClick={() => {
+                    handleSubjectClick(subject);
+                  }}
                   sx={{
                     height: '100%',
                     display: 'flex',
@@ -232,7 +243,6 @@ const Subjects = () => {
                       opacity: 1,
                     }
                   }}
-                  onClick={() => handleSubjectClick(subject)}
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Box
@@ -242,35 +252,24 @@ const Subjects = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         height: '100%',
+                        gap: 2
                       }}
                     >
-                      <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 100,
-                            height: 100,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
-                            mb: 2,
-                            boxShadow: '0 8px 16px rgba(0, 86, 179, 0.3)',
-                          }}
-                        >
-                          <subject.icon sx={{ fontSize: '3rem', color: 'white' }} />
-                        </Box>
-                      </motion.div>
-                      <Typography
-                        variant="h5"
-                        component="h3"
+                      <Box
+                        component={subject.icon}
                         sx={{
-                          textAlign: 'center',
+                          fontSize: 48,
+                          color: theme.palette.primary.main,
+                          mb: 2
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        component="h3"
+                        align="center"
+                        sx={{
                           fontWeight: 600,
-                          color: theme.palette.text.primary,
+                          color: theme.palette.text.primary
                         }}
                       >
                         {subject.name}
@@ -282,14 +281,16 @@ const Subjects = () => {
             </Grid>
           ))}
         </Grid>
-
+      </Container>
+      
+      {selectedSubject && (
         <SubjectExpandedDialog
-          open={!!selectedSubject}
-          subject={selectedSubject || undefined}
+          open={true}
+          subject={selectedSubject}
           onClose={handleCloseDialog}
           loading={isLoading}
         />
-      </Container>
+      )}
     </Box>
   );
 };

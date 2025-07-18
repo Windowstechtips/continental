@@ -2,63 +2,51 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 interface CurriculumContextType {
   curriculum: string;
-  level: string;
-  grade: string;
+  selectedGrade: string;
   isInitialized: boolean;
   setCurriculum: (curriculum: string) => void;
-  setLevel: (level: string) => void;
-  setGrade: (grade: string) => void;
+  setSelectedGrade: (grade: string) => void;
 }
 
 const CurriculumContext = createContext<CurriculumContextType | undefined>(undefined);
 
 export const CurriculumProvider = ({ children }: { children: ReactNode }) => {
   const [curriculum, setCurriculum] = useState<string>('');
-  const [level, setLevel] = useState<string>('');
-  const [grade, setGrade] = useState<string>('');
+  const [selectedGrade, setSelectedGrade] = useState<string>('9');
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Load values from localStorage
+    // Load curriculum and grade from localStorage
     const savedCurriculum = localStorage.getItem('curriculum');
-    const savedLevel = localStorage.getItem('level');
-    const savedGrade = localStorage.getItem('grade');
+    const savedGrade = localStorage.getItem('selectedGrade');
     
     if (savedCurriculum) setCurriculum(savedCurriculum);
-    if (savedLevel) setLevel(savedLevel);
-    if (savedGrade) setGrade(savedGrade);
+    if (savedGrade) setSelectedGrade(savedGrade);
     
     setIsInitialized(true);
   }, []);
 
-  // Save values to localStorage when they change
+  // Save curriculum to localStorage when it changes
   useEffect(() => {
     if (curriculum) {
       localStorage.setItem('curriculum', curriculum);
     }
   }, [curriculum]);
 
+  // Save selected grade to localStorage when it changes
   useEffect(() => {
-    if (level) {
-      localStorage.setItem('level', level);
+    if (selectedGrade) {
+      localStorage.setItem('selectedGrade', selectedGrade);
     }
-  }, [level]);
-
-  useEffect(() => {
-    if (grade) {
-      localStorage.setItem('grade', grade);
-    }
-  }, [grade]);
+  }, [selectedGrade]);
 
   return (
     <CurriculumContext.Provider value={{
       curriculum,
-      level,
-      grade,
+      selectedGrade,
       isInitialized,
       setCurriculum,
-      setLevel,
-      setGrade,
+      setSelectedGrade,
     }}>
       {children}
     </CurriculumContext.Provider>

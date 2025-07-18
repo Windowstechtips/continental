@@ -103,7 +103,7 @@ export const fetchSubjectsContent = async (): Promise<SubjectContent[]> => {
     console.log('Fetching subjects...');
     const { data, error } = await supabase
       .from('subjects_content')
-      .select('id, subject_name, subject_description, whatsapp_link');
+      .select('id, subject_name, subject_description, whatsapp_link, grade, syllabus');
 
     if (error) {
       console.error('Error fetching subjects:', error.message, error);

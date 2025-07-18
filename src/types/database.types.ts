@@ -3,6 +3,8 @@ export interface SubjectContent {
   subject_name: string;
   subject_description: string;
   whatsapp_link: string | null;
+  grade: string | null;
+  syllabus: string | null;
 }
 
 export interface TeacherContent {

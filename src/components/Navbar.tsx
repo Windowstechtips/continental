@@ -14,7 +14,8 @@ import {
   ListItemIcon,
   Badge,
   Tooltip,
-  alpha
+  alpha,
+  Chip
 } from '@mui/material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -30,9 +31,12 @@ import SchoolIcon from '@mui/icons-material/School';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useState, useEffect } from 'react';
 import ContactDialog from './ContactDialog';
+import CurriculumSelectionDialog from './CurriculumSelectionDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { useCurriculum } from '../contexts/CurriculumContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
@@ -55,8 +59,10 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { curriculum, selectedGrade } = useCurriculum();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [curriculumDialogOpen, setCurriculumDialogOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -83,6 +89,14 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
 
   const handleContactClose = () => {
     setContactOpen(false);
+  };
+
+  const handleCurriculumDialogOpen = () => {
+    setCurriculumDialogOpen(true);
+  };
+
+  const handleCurriculumDialogClose = (selectedData?: { curriculum: string; selectedGrade: string }) => {
+    setCurriculumDialogOpen(false);
   };
 
   const isActive = (href: string) => {
@@ -422,6 +436,33 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
               ))}
               
               <Box sx={{ display: 'flex', ml: 1, gap: 1 }}>
+                {/* Curriculum Selection Button */}
+                {curriculum && (
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<SettingsIcon />}
+                      onClick={handleCurriculumDialogOpen}
+                      sx={{
+                        borderRadius: 8,
+                        px: 2,
+                        py: 1,
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                        }
+                      }}
+                    >
+                      {curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} - Grade {selectedGrade}
+                    </Button>
+                  </motion.div>
+                )}
+                
                 <motion.div 
                   whileHover={{ scale: 1.05 }} 
                   whileTap={{ scale: 0.95 }}
@@ -490,7 +531,9 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
         {drawer}
       </Drawer>
 
+      {/* Dialogs */}
       <ContactDialog open={contactOpen} onClose={handleContactClose} />
+      <CurriculumSelectionDialog open={curriculumDialogOpen} onClose={handleCurriculumDialogClose} />
     </>
   );
 };

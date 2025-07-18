@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,41 +13,30 @@ import {
   Typography,
   Box,
   useTheme,
-  MenuItem,
-  Select,
-  InputLabel
+  Divider,
+  Grid,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useCurriculum } from '../contexts/CurriculumContext';
 
 interface CurriculumSelectionDialogProps {
   open: boolean;
-  onClose: (selectedData?: { curriculum: string; level: string; grade: string }) => void;
+  onClose: (selectedData?: { curriculum: string; selectedGrade: string }) => void;
 }
 
 const CurriculumSelectionDialog = ({ open, onClose }: CurriculumSelectionDialogProps) => {
   const theme = useTheme();
-  const [curriculum, setCurriculum] = useState('cambridge');
-  const [level, setLevel] = useState('O/L');
-  const [grade, setGrade] = useState('');
-  
-  // Set default grade based on level
-  useEffect(() => {
-    setGrade(level === 'O/L' ? '9' : '11');
-  }, [level]);
+  const { setCurriculum, setSelectedGrade } = useCurriculum();
+  const [curriculum, setCurriculumState] = useState('cambridge');
+  const [selectedGrade, setSelectedGradeState] = useState('9');
 
   const handleSubmit = () => {
-    // Save selections to localStorage
-    localStorage.setItem('curriculum', curriculum);
-    localStorage.setItem('level', level);
-    localStorage.setItem('grade', grade);
+    // Update context with selected curriculum and grade
+    setCurriculum(curriculum);
+    setSelectedGrade(selectedGrade);
     
     // Close dialog with selected data
-    onClose({ curriculum, level, grade });
-  };
-
-  // Get available grades based on selected level
-  const getGradeOptions = () => {
-    return level === 'O/L' ? ['9', '10'] : ['11', '12'];
+    onClose({ curriculum, selectedGrade });
   };
 
   return (
@@ -55,22 +44,29 @@ const CurriculumSelectionDialog = ({ open, onClose }: CurriculumSelectionDialogP
       open={open} 
       maxWidth="sm" 
       fullWidth
+      disableEscapeKeyDown
+      hideBackdrop={false}
       PaperProps={{
         sx: {
           borderRadius: 2,
           boxShadow: theme.shadows[10],
-          px: 2
-        }
+          px: 2,
+          py: 2,
+          backgroundColor: theme.palette.background.paper,
+          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))'
+        },
+        elevation: 24
       }}
     >
       <DialogTitle component="div">
         <Typography 
-          variant="h4" 
+          variant="h3" 
           align="center" 
           sx={{ 
-            fontWeight: 600, 
+            fontWeight: 700, 
             color: 'primary.main', 
-            my: 2 
+            my: 2,
+            fontSize: { xs: '1.75rem', sm: '2.25rem' }
           }}
         >
           Welcome to Continental College
@@ -79,122 +75,158 @@ const CurriculumSelectionDialog = ({ open, onClose }: CurriculumSelectionDialogP
       
       <DialogContent>
         <Typography 
-          variant="body1" 
-          sx={{ mb: 3, textAlign: 'center' }}
+          variant="h6" 
+          sx={{ 
+            mb: 4, 
+            textAlign: 'center',
+            fontWeight: 500,
+            color: theme.palette.text.secondary
+          }}
         >
           Please select your curriculum and grade to personalize your experience.
         </Typography>
         
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 4, 
-          justifyContent: 'center', 
-          mb: 3 
-        }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <FormControl component="fieldset" fullWidth>
-              <FormLabel component="legend" sx={{ fontWeight: 600, mb: 1 }}>Curriculum</FormLabel>
-              <RadioGroup
-                value={curriculum}
-                onChange={(e) => setCurriculum(e.target.value)}
-              >
-                <FormControlLabel 
-                  value="cambridge" 
-                  control={
-                    <Radio sx={{ 
-                      color: 'primary.main',
-                      '&.Mui-checked': { color: 'primary.main' }
-                    }} />
-                  } 
-                  label="Cambridge" 
-                />
-                <FormControlLabel 
-                  value="edexcel" 
-                  control={
-                    <Radio sx={{ 
-                      color: 'primary.main',
-                      '&.Mui-checked': { color: 'primary.main' }
-                    }} />
-                  } 
-                  label="Edexcel" 
-                />
-              </RadioGroup>
-            </FormControl>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            style={{ width: '100%' }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Grid container spacing={4}>
+          {/* Curriculum Selection */}
+          <Grid item xs={12} md={6}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <FormControl component="fieldset" fullWidth>
-                <FormLabel component="legend" sx={{ fontWeight: 600, mb: 1 }}>Level</FormLabel>
+                <FormLabel component="legend" sx={{ 
+                  fontWeight: 600, 
+                  mb: 2,
+                  fontSize: '1.1rem',
+                  color: theme.palette.primary.main
+                }}>
+                  Curriculum
+                </FormLabel>
                 <RadioGroup
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
+                  value={curriculum}
+                  onChange={(e) => setCurriculumState(e.target.value)}
                 >
                   <FormControlLabel 
-                    value="O/L" 
+                    value="cambridge" 
                     control={
                       <Radio sx={{ 
                         color: 'primary.main',
                         '&.Mui-checked': { color: 'primary.main' }
                       }} />
                     } 
-                    label="Ordinary Level (O/L)" 
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Cambridge
+                      </Typography>
+                    }
+                    sx={{ mb: 1.5, py: 0.5 }}
                   />
                   <FormControlLabel 
-                    value="A/L" 
+                    value="edexcel" 
                     control={
                       <Radio sx={{ 
                         color: 'primary.main',
                         '&.Mui-checked': { color: 'primary.main' }
                       }} />
                     } 
-                    label="Advanced Level (A/L)" 
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Edexcel
+                      </Typography>
+                    }
+                    sx={{ py: 0.5 }}
                   />
                 </RadioGroup>
               </FormControl>
-              
-              <FormControl fullWidth>
-                <InputLabel id="grade-select-label">Grade</InputLabel>
-                <Select
-                  labelId="grade-select-label"
-                  id="grade-select"
-                  value={grade}
-                  label="Grade"
-                  onChange={(e) => setGrade(e.target.value)}
+            </motion.div>
+          </Grid>
+          
+          {/* Grade Selection */}
+          <Grid item xs={12} md={6}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <FormControl component="fieldset" fullWidth>
+                <FormLabel component="legend" sx={{ 
+                  fontWeight: 600, 
+                  mb: 2,
+                  fontSize: '1.1rem',
+                  color: theme.palette.primary.main
+                }}>
+                  Grade
+                </FormLabel>
+                <RadioGroup
+                  value={selectedGrade}
+                  onChange={(e) => setSelectedGradeState(e.target.value)}
                 >
-                  {getGradeOptions().map((gradeOption) => (
-                    <MenuItem key={gradeOption} value={gradeOption}>
-                      Grade {gradeOption}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  <FormControlLabel 
+                    value="9" 
+                    control={
+                      <Radio sx={{ 
+                        color: 'primary.main',
+                        '&.Mui-checked': { color: 'primary.main' }
+                      }} />
+                    } 
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Grade 9
+                      </Typography>
+                    }
+                    sx={{ mb: 1, py: 0.5 }}
+                  />
+                  <FormControlLabel 
+                    value="10" 
+                    control={
+                      <Radio sx={{ 
+                        color: 'primary.main',
+                        '&.Mui-checked': { color: 'primary.main' }
+                      }} />
+                    } 
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Grade 10
+                      </Typography>
+                    }
+                    sx={{ mb: 1, py: 0.5 }}
+                  />
+                  <FormControlLabel 
+                    value="AS" 
+                    control={
+                      <Radio sx={{ 
+                        color: 'primary.main',
+                        '&.Mui-checked': { color: 'primary.main' }
+                      }} />
+                    } 
+                    label={
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        AS Level
+                      </Typography>
+                    }
+                    sx={{ py: 0.5 }}
+                  />
+                </RadioGroup>
               </FormControl>
-            </Box>
-          </motion.div>
-        </Box>
+            </motion.div>
+          </Grid>
+        </Grid>
       </DialogContent>
       
-      <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'center' }}>
+      <DialogActions sx={{ px: 3, pb: 4, pt: 2, justifyContent: 'center' }}>
         <Button
           variant="contained"
           color="primary"
           size="large"
           onClick={handleSubmit}
           sx={{
-            px: 4,
+            px: 5,
             py: 1.5,
             fontWeight: 600,
-            borderRadius: 2
+            borderRadius: 2,
+            fontSize: '1rem',
+            boxShadow: theme.shadows[4]
           }}
         >
           Save Preferences
