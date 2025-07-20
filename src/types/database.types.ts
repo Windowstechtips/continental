@@ -17,4 +17,5 @@ export interface TeacherContent {
   cloudinary_url: string | null;
   grade: string | null;
   syllabus: string | null;
+  whatsapp_link: string | null;
 } 

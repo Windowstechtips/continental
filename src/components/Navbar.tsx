@@ -161,6 +161,47 @@ const Navbar = ({ onToggleTheme, isDark }: NavbarProps) => {
       </Box>
       
       <List sx={{ flex: 1, py: 2 }}>
+        {/* Curriculum Selection Button */}
+        {curriculum && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ListItem disablePadding>
+              <ListItemButton
+                sx={{ 
+                  textAlign: 'left',
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2,
+                  mx: 1,
+                  mb: 1.5,
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                }}
+                onClick={() => {
+                  handleDrawerToggle();
+                  handleCurriculumDialogOpen();
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  minWidth: 40,
+                  color: 'primary.main',
+                }}>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={`${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} - Grade ${selectedGrade}`}
+                  primaryTypographyProps={{
+                    fontWeight: 600,
+                    color: 'primary.main',
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </motion.div>
+        )}
+
         <AnimatePresence>
           {navItems.map((item, index) => (
             <motion.div

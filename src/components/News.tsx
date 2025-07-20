@@ -40,6 +40,14 @@ const News = () => {
     loadNews();
   }, []);
 
+  // Calculate dynamic height based on number of news items
+  const getNewsContainerHeight = () => {
+    if (news.length === 0) return '200px';
+    if (news.length === 1) return '300px';
+    if (news.length === 2) return '400px';
+    return '600px';
+  };
+
   return (
     <Box
       id="news"
@@ -66,7 +74,11 @@ const News = () => {
           <Grid item xs={12} md={8}>
             <Box
               sx={{
-                height: '600px',
+                height: { 
+                  xs: news.length === 0 ? '200px' : news.length === 1 ? '300px' : '400px',
+                  sm: news.length === 0 ? '200px' : news.length === 1 ? '300px' : '500px',
+                  md: getNewsContainerHeight()
+                },
                 overflow: 'hidden',
                 overflowY: 'auto',
                 pr: 2,

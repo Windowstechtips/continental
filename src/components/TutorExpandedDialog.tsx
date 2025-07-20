@@ -21,6 +21,8 @@ interface TutorExpandedDialogProps {
 const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps) => {
   const theme = useTheme();
 
+  console.log('TutorExpandedDialog rendered with props:', { open, tutor });
+
   const parseTeacherData = (teacher: TeacherContent) => {
     const grades = teacher.grade ? teacher.grade.split(',').map(g => g.trim()) : [];
     const syllabi = teacher.syllabus ? teacher.syllabus.split(',').map(s => s.trim().toLowerCase()) : [];
@@ -266,13 +268,15 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
           onClose={onClose}
           maxWidth="lg"
           fullWidth
+          scroll="paper"
           PaperProps={{
             sx: {
-              borderRadius: 3,
+              borderRadius: { xs: 1.5, sm: 3 }, // Reduced border radius on mobile
               bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : '#ffffff',
               overflow: 'hidden',
-              margin: { xs: 2, sm: 3, md: 4 },
-              maxHeight: { xs: 'calc(100% - 32px)', sm: 'calc(100% - 48px)', md: 'calc(100% - 64px)' },
+              margin: { xs: 0, sm: 3, md: 4 },
+              maxHeight: { xs: '100%', sm: 'calc(100% - 48px)', md: 'calc(100% - 64px)' },
+              height: { xs: '100%', sm: 'auto' },
               backgroundImage: 'none',
             },
             component: motion.div,
@@ -282,6 +286,10 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
             transition: { duration: 0.4, ease: "easeOut" }
           }}
           sx={{
+            '& .MuiDialog-container': {
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              height: '100%',
+            },
             '& .MuiDialogContent-root': {
               overflowY: 'auto',
               '&::-webkit-scrollbar': {
@@ -308,310 +316,233 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
                 : 'rgba(255, 255, 255, 0.8)',
             }
           }}
+          fullScreen={window.innerWidth <= 600}
         >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: { xs: 8, sm: 16 },
+              top: { xs: 8, sm: 16 },
+              color: 'white',
+              zIndex: 10,
+              bgcolor: 'rgba(0, 0, 0, 0.3)',
+              backdropFilter: 'blur(4px)',
+              '&:hover': {
+                bgcolor: 'rgba(0, 0, 0, 0.5)',
+              }
+            }}
           >
-            <IconButton
-              aria-label="close"
-              onClick={onClose}
-              sx={{
-                position: 'absolute',
-                right: { xs: 8, sm: 16 },
-                top: { xs: 8, sm: 16 },
-                color: 'white',
-                zIndex: 10,
-                bgcolor: 'rgba(0, 0, 0, 0.3)',
-                backdropFilter: 'blur(4px)',
-                '&:hover': {
-                  bgcolor: 'rgba(0, 0, 0, 0.5)',
-                }
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
+            <CloseIcon />
+          </IconButton>
 
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Box
-                component={motion.div}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
+          {/* Header Section - Outside DialogContent for fixed positioning */}
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+              p: { xs: 3, sm: 4, md: 5 },
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'url(https://www.transparenttextures.com/patterns/cubes.png)',
+                opacity: 0.1,
+                zIndex: 0,
+              },
+            }}
+          >
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'center', sm: 'center' },
+              position: 'relative', 
+              zIndex: 1,
+              gap: { xs: 3, sm: 4 }
+            }}>
+              <Avatar
+                src={
+                  tutor.cloudinary_url || 
+                  (tutor.picture_id?.includes('http') ? tutor.picture_id : 
+                   tutor.picture_id ? 
+                    tutor.picture_id.includes('/') ? 
+                      `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${tutor.picture_id}` : 
+                      `/misc/teachers/${tutor.picture_id}` 
+                    : undefined)
+                }
+                alt={tutor.teacher_name}
                 sx={{
-                  background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
-                  p: { xs: 3, sm: 4, md: 5 },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'url(https://www.transparenttextures.com/patterns/cubes.png)',
-                    opacity: 0.1,
-                    zIndex: 0,
-                  },
+                  width: { xs: 130, sm: 160 },
+                  height: { xs: 130, sm: 160 },
+                  bgcolor: 'primary.main',
+                  fontSize: '3rem',
+                  border: '4px solid white',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                 }}
               >
+                {tutor.teacher_name.charAt(0)}
+              </Avatar>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: { xs: 'center', sm: 'flex-start' }
+              }}>
+                <Typography 
+                  variant="h4" 
+                  gutterBottom 
+                  sx={{ 
+                    mb: 1, 
+                    color: 'white', 
+                    fontWeight: 700,
+                    fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                    textAlign: { xs: 'center', sm: 'left' },
+                    textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  {tutor.teacher_name}
+                </Typography>
+                
                 <Box sx={{ 
                   display: 'flex', 
+                  alignItems: 'center',
                   flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'center', sm: 'center' },
-                  position: 'relative', 
-                  zIndex: 1,
-                  gap: { xs: 3, sm: 4 }
+                  gap: { xs: 1, sm: 2 }
                 }}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ 
-                      duration: 0.5,
-                      delay: 0.3,
-                      type: "spring",
-                      stiffness: 100
+                  {getSubjectIcon(tutor.subject_name)}
+                  <Typography 
+                    variant="h3" 
+                    sx={{ 
+                      color: '#E3F2FD',
+                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                      textAlign: { xs: 'center', sm: 'left' },
+                      mb: 2
                     }}
                   >
-                    <Avatar
-                      src={
-                        tutor.cloudinary_url || 
-                        (tutor.picture_id?.includes('http') ? tutor.picture_id : 
-                         tutor.picture_id ? 
-                          tutor.picture_id.includes('/') ? 
-                            `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${tutor.picture_id}` : 
-                            `/misc/teachers/${tutor.picture_id}` 
-                          : undefined)
-                      }
-                      alt={tutor.teacher_name}
-                      sx={{
-                        width: { xs: 130, sm: 160 },
-                        height: { xs: 130, sm: 160 },
-                        bgcolor: 'primary.main',
-                        fontSize: '3rem',
-                        border: '4px solid white',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                      }}
-                      imgProps={{
-                        onError: () => {
-                          console.error('Failed to load expanded tutor image:', {
-                            tutorName: tutor.teacher_name,
-                            cloudinaryUrl: tutor.cloudinary_url,
-                            pictureId: tutor.picture_id,
-                            attemptedSrc: tutor.cloudinary_url || 
-                              (tutor.picture_id?.includes('http') ? tutor.picture_id : 
-                               tutor.picture_id ? 
-                                tutor.picture_id.includes('/') ? 
-                                  `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${tutor.picture_id}` : 
-                                  `/misc/teachers/${tutor.picture_id}` 
-                                : 'none')
-                          });
-                        }
-                      }}
-                    >
-                      {tutor.teacher_name.charAt(0)}
-                    </Avatar>
-                  </motion.div>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    alignItems: { xs: 'center', sm: 'flex-start' }
-                  }}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.4 }}
-                    >
-                      <Typography 
-                        variant="h4" 
-                        gutterBottom 
-                        sx={{ 
-                          mb: 1, 
-                          color: 'white', 
-                          fontWeight: 700,
-                          fontSize: { xs: '1.75rem', sm: '2.25rem' },
-                          textAlign: { xs: 'center', sm: 'left' },
-                          textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        }}
-                      >
-                        {tutor.teacher_name}
-                      </Typography>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.5 }}
-                    >
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        gap: { xs: 1, sm: 2 }
-                      }}>
-                        {getSubjectIcon(tutor.subject_name)}
-                        <Typography 
-                          variant="h3" 
-                          sx={{ 
-                            color: '#E3F2FD',
-                            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
-                            fontWeight: 600,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                            textAlign: { xs: 'center', sm: 'left' },
-                            mb: 2
-                          }}
-                        >
-                          {tutor.subject_name}
-                        </Typography>
-                      </Box>
-                    </motion.div>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.6 }}
-                    >
-                      {renderTeacherPills()}
-                    </motion.div>
-                    
-                    {tutor.whatsapp_link && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.7 }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          variant="contained"
-                          startIcon={<WhatsAppIcon />}
-                          href={tutor.whatsapp_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            mt: 3,
-                            bgcolor: '#25D366',
-                            color: 'white',
-                            '&:hover': {
-                              bgcolor: '#128C7E',
-                            },
-                            fontWeight: 600,
-                            px: 3,
-                            py: 1,
-                            borderRadius: 2,
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          }}
-                        >
-                          Contact via WhatsApp
-                        </Button>
-                      </motion.div>
-                    )}
-                  </Box>
+                    {tutor.subject_name}
+                  </Typography>
                 </Box>
+                
+                {renderTeacherPills()}
+                
+                {tutor.whatsapp_link && (
+                  <Button
+                    variant="contained"
+                    startIcon={<WhatsAppIcon />}
+                    href={tutor.whatsapp_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      mt: 3,
+                      bgcolor: '#25D366',
+                      color: 'white',
+                      '&:hover': {
+                        bgcolor: '#128C7E',
+                      },
+                      fontWeight: 600,
+                      px: 3,
+                      py: 1,
+                      borderRadius: 2,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    }}
+                  >
+                    Contact via WhatsApp
+                  </Button>
+                )}
               </Box>
+            </Box>
+          </Box>
 
-              <DialogContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 40 }}
-                  transition={{ duration: 0.4, delay: 0.3 }}
+          {/* Scrollable Content Area */}
+          <DialogContent 
+            sx={{ 
+              p: { xs: 3, sm: 4, md: 5 },
+              height: { xs: 'calc(100vh - 250px)', sm: 'auto' }, // Adjust based on header height
+              overflowY: 'auto',
+            }}
+          >
+            <Grid container spacing={{ xs: 4, sm: 6 }}>
+              <Grid item xs={12} md={4}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom 
+                  sx={{ 
+                    mb: 3,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                    fontWeight: 700,
+                    textAlign: { xs: 'center', sm: 'left' },
+                    position: 'relative',
+                    display: 'inline-block',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: -8,
+                      left: 0,
+                      width: '40px',
+                      height: '3px',
+                      background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
+                      borderRadius: '3px',
+                    }
+                  }}
                 >
-                  <Grid container spacing={{ xs: 4, sm: 6 }}>
-                    <Grid item xs={12} md={4}>
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.4 }}
-                      >
-                        <Typography 
-                          variant="h6" 
-                          gutterBottom 
-                          sx={{ 
-                            mb: 3,
-                            fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                            fontWeight: 700,
-                            textAlign: { xs: 'center', sm: 'left' },
-                            position: 'relative',
-                            display: 'inline-block',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              bottom: -8,
-                              left: 0,
-                              width: '40px',
-                              height: '3px',
-                              background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
-                              borderRadius: '3px',
-                            }
-                          }}
-                        >
-                          Qualifications
-                        </Typography>
-                      </motion.div>
-                      {renderQualifications()}
-                    </Grid>
+                  Qualifications
+                </Typography>
+                {renderQualifications()}
+              </Grid>
 
-                    <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
-                      <Divider 
-                        orientation="vertical" 
-                        flexItem 
-                        sx={{ 
-                          mx: 'auto',
-                          height: '100%'
-                        }} 
-                      />
-                    </Grid>
+              <Grid item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+                <Divider sx={{ my: 2 }} />
+              </Grid>
 
-                    <Grid item xs={12} md={7}>
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.4 }}
-                      >
-                        <Typography 
-                          variant="h6" 
-                          gutterBottom 
-                          sx={{ 
-                            mb: 3,
-                            fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                            fontWeight: 700,
-                            textAlign: { xs: 'center', sm: 'left' },
-                            position: 'relative',
-                            display: 'inline-block',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              bottom: -8,
-                              left: 0,
-                              width: '40px',
-                              height: '3px',
-                              background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
-                              borderRadius: '3px',
-                            }
-                          }}
-                        >
-                          About
-                        </Typography>
-                      </motion.div>
-                      {renderFormattedDescription(tutor.description)}
-                    </Grid>
-                  </Grid>
-                </motion.div>
-              </DialogContent>
-            </motion.div>
-          </motion.div>
+              <Grid item xs={12} md={1} sx={{ display: { xs: 'none', md: 'block' } }}>
+                <Divider 
+                  orientation="vertical" 
+                  flexItem 
+                  sx={{ 
+                    mx: 'auto',
+                    height: '100%'
+                  }} 
+                />
+              </Grid>
+
+              <Grid item xs={12} md={7}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom 
+                  sx={{ 
+                    mb: 3,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                    fontWeight: 700,
+                    textAlign: { xs: 'center', sm: 'left' },
+                    position: 'relative',
+                    display: 'inline-block',
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: -8,
+                      left: 0,
+                      width: '40px',
+                      height: '3px',
+                      background: 'linear-gradient(90deg, #0056b3, #64b5f6)',
+                      borderRadius: '3px',
+                    }
+                  }}
+                >
+                  About
+                </Typography>
+                {renderFormattedDescription(tutor.description)}
+              </Grid>
+            </Grid>
+          </DialogContent>
         </Dialog>
       )}
     </AnimatePresence>
