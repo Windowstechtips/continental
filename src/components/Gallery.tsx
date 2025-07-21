@@ -7,80 +7,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { CloudinaryImage } from '../services/cloudinary';
 import { fetchGalleryImagesFromSupabase, fetchGalleryTags, GalleryImage } from '../services/supabase';
 
-// Fallback images in case Supabase fetch fails
-const fallbackImages: CloudinaryImage[] = [
-  {
-    public_id: 'fallback1',
-    secure_url: '/misc/gallery/1.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 1',
-    title: 'Gallery Image 1'
-  },
-  {
-    public_id: 'fallback2',
-    secure_url: '/misc/gallery/2.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 2',
-    title: 'Gallery Image 2'
-  },
-  {
-    public_id: 'fallback3',
-    secure_url: '/misc/gallery/3.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 3',
-    title: 'Gallery Image 3'
-  },
-  {
-    public_id: 'fallback4',
-    secure_url: '/misc/gallery/4.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 4',
-    title: 'Gallery Image 4'
-  },
-  {
-    public_id: 'fallback5',
-    secure_url: '/misc/gallery/5.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 5',
-    title: 'Gallery Image 5'
-  },
-  {
-    public_id: 'fallback6',
-    secure_url: '/misc/gallery/6.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 6',
-    title: 'Gallery Image 6'
-  },
-  {
-    public_id: 'fallback7',
-    secure_url: '/misc/gallery/7.jpg',
-    format: 'jpg',
-    width: 800,
-    height: 600,
-    created_at: new Date().toISOString(),
-    alt: 'Gallery Image 7',
-    title: 'Gallery Image 7'
-  }
-];
-
 const Gallery = () => {
   const theme = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -88,8 +14,6 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
-  const [usingFallback, setUsingFallback] = useState(false);
-  const [failedLoads, setFailedLoads] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [loadingTags, setLoadingTags] = useState(true);
@@ -116,8 +40,6 @@ const Gallery = () => {
     const loadImages = async () => {
       setLoading(true);
       setError(null);
-      setUsingFallback(false);
-      setFailedLoads(0);
       
       try {
         console.log(`Gallery component: Loading images from Supabase with tag: ${selectedTag}...`);
@@ -128,18 +50,16 @@ const Gallery = () => {
           setImages(galleryImages);
           setCurrentIndex(0);
         } else {
-          // If no images were returned, set an error and use fallback
-          console.warn(`Gallery component: No images found in Supabase with tag: ${selectedTag}, using fallback images`);
-          setError(`No images found in the gallery${selectedTag !== 'all' ? ` with category "${selectedTag}"` : ''}. Showing fallback images instead.`);
-          setUsingFallback(true);
-          setImages(fallbackImages as unknown as GalleryImage[]);
+          // If no images were returned, set an error
+          console.warn(`Gallery component: No images found in Supabase with tag: ${selectedTag}`);
+          setError(`No images found in the gallery${selectedTag !== 'all' ? ` with category "${selectedTag}"` : ''}.`);
+          setImages([]);
           setCurrentIndex(0);
         }
       } catch (err) {
         console.error('Gallery component: Failed to load gallery images:', err);
-        setError('Failed to load gallery images. Showing fallback images instead.');
-        setUsingFallback(true);
-        setImages(fallbackImages as unknown as GalleryImage[]);
+        setError('Failed to load gallery images.');
+        setImages([]);
         setCurrentIndex(0);
       } finally {
         setLoading(false);
@@ -185,21 +105,9 @@ const Gallery = () => {
   // Handle image load errors
   const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>, index: number) => {
     console.error(`Image failed to load: ${images[index]?.secure_url}`);
-    setFailedLoads(prev => {
-      const newCount = prev + 1;
-      // If too many images fail to load, switch to fallback
-      if (newCount > 3 && !usingFallback) {
-        console.warn('Too many image load failures, switching to fallback images');
-        setError('Unable to load images. Using fallback images.');
-        setUsingFallback(true);
-        setImages(fallbackImages as unknown as GalleryImage[]);
-        setCurrentIndex(0);
-      }
-      return newCount;
-    });
     
-    // Fallback to a default image if the image fails to load
-    (e.target as HTMLImageElement).src = fallbackImages[0].secure_url;
+    // Set a placeholder or default image
+    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTk5OTkiPkltYWdlIE5vdCBBdmFpbGFibGU8L3RleHQ+PC9zdmc+';
   };
 
   return (
@@ -249,7 +157,7 @@ const Gallery = () => {
               variant="h2"
               sx={{
                 textAlign: 'center',
-                mb: { xs: 3, sm: 4 },
+                mb: { xs: 4, sm: 5 },
                 fontSize: { xs: '2.25rem', sm: '2.75rem' },
                 fontWeight: 800,
                 background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
@@ -259,27 +167,6 @@ const Gallery = () => {
               }}
             >
               Gallery
-            </Typography>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            viewport={{ once: true }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                textAlign: 'center',
-                maxWidth: '800px',
-                mx: 'auto',
-                mb: 4,
-                color: 'text.secondary',
-                px: { xs: 2, sm: 0 },
-              }}
-            >
-              Explore our collection of images showcasing campus life, events, and student achievements
             </Typography>
           </motion.div>
         </motion.div>
@@ -436,21 +323,6 @@ const Gallery = () => {
 
           {!loading && images.length > 0 && (
             <>
-              {usingFallback && (
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  mb: 3,
-                  p: 2,
-                  borderRadius: '12px',
-                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,152,0,0.1)' : 'rgba(255,152,0,0.05)',
-                  border: '1px solid',
-                  borderColor: theme.palette.mode === 'dark' ? 'rgba(255,152,0,0.2)' : 'rgba(255,152,0,0.1)',
-                }}>
-                  <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
-                    Using fallback images. Gallery images could not be loaded.
-                  </Typography>
-                </Box>
-              )}
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -495,7 +367,7 @@ const Gallery = () => {
                     >
                       <Box
                         component="img"
-                        src={images[currentIndex]?.secure_url || fallbackImages[0].secure_url}
+                        src={images[currentIndex]?.secure_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTk5OTkiPkltYWdlIE5vdCBBdmFpbGFibGU8L3RleHQ+PC9zdmc+'}
                         alt={images[currentIndex]?.alt || 'Gallery Image'}
                         sx={{
                           width: '100%',
@@ -790,7 +662,7 @@ const Gallery = () => {
         </Modal>
         
         {/* Warning message when using fallback */}
-        {usingFallback && error && (
+        {error && (
           <Alert 
             severity="warning" 
             sx={{ 

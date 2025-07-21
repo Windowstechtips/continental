@@ -130,12 +130,41 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
+          <Box 
+            sx={{ 
+              textAlign: 'center',
+              position: 'relative',
+              display: 'inline-block',
+            }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '3rem', sm: '3rem', md: '4rem' },
+                mt: { xs: 2, sm: 3 },
+                mb: { xs: 2, sm: 2 },
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                px: { xs: 2, sm: 0 },
+                background: 'linear-gradient(135deg, #0077CC 0%, #45c6ed 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                position: 'relative',
+                zIndex: 2,
+                textShadow: '0px 1px 1px rgba(0,0,0,0.1)',
+                display: 'inline-block',
+              }}
+            >
+              Continental College
+            </Typography>
+          </Box>
+          
           <Typography
             variant="h1"
             sx={{
               color: 'white',
-              mb: { xs: 1.5, sm: 2 },
-              fontSize: { xs: '2rem', sm: '1.75rem', md: '2.5rem' },
+              mb: { xs: 3, sm: 3 },
+              fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
               textAlign: 'center',
               textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
               fontWeight: 500,
@@ -145,55 +174,33 @@ const Hero = () => {
           >
             {slides[currentSlide].title}
           </Typography>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <Typography
-              variant="h2"
+          <Box sx={{ 
+            display: { xs: 'flex', sm: 'none' },
+            justifyContent: 'center',
+            width: '100%',
+          }}>
+            <Button
+              variant="contained"
+              startIcon={<WhatsAppIcon />}
+              href="https://chat.whatsapp.com/CeMhwDKaxjJ6J4McgOfesp"
+              target="_blank"
+              rel="noopener noreferrer"
               sx={{
-                color: theme.palette.primary.main,
-                textAlign: 'center',
-                fontSize: { xs: '3rem', sm: '3rem', md: '4rem' },
-                mt: { xs: 2, sm: 3 },
-                mb: { xs: 3, sm: 0 },
-                fontWeight: 600,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
-                letterSpacing: '-0.02em',
-                px: { xs: 2, sm: 0 },
+                backgroundColor: '#25D366',
+                '&:hover': {
+                  backgroundColor: '#128C7E',
+                },
+                fontSize: '1.2rem',
+                py: 1.5,
+                px: 4,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontWeight: 500,
               }}
             >
-              Continental College
-            </Typography>
-            <Box sx={{ 
-              display: { xs: 'flex', sm: 'none' },
-              justifyContent: 'center',
-              width: '100%',
-            }}>
-              <Button
-                variant="contained"
-                startIcon={<WhatsAppIcon />}
-                href="https://chat.whatsapp.com/CeMhwDKaxjJ6J4McgOfesp"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  backgroundColor: '#25D366',
-                  '&:hover': {
-                    backgroundColor: '#128C7E',
-                  },
-                  fontSize: '1.2rem',
-                  py: 1.5,
-                  px: 4,
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                }}
-              >
-                Contact Us Now
-              </Button>
-            </Box>
-          </motion.div>
+              Contact Us Now
+            </Button>
+          </Box>
         </motion.div>
       </Container>
     </Box>

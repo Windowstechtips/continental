@@ -32,32 +32,72 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
   const renderTeacherPills = () => {
     const { grades, syllabi } = parseTeacherData(tutor);
     
-    // Combine consecutive grades
-    const combinedGrades = grades.reduce((acc: string[], grade: string, i: number) => {
-      const prevGrade = grades[i - 1];
+    // Sort grades to have numeric grades first, then special grades like 'AS'
+    const sortedGrades = [...grades].sort((a, b) => {
+      const aIsNumber = !isNaN(parseInt(a));
+      const bIsNumber = !isNaN(parseInt(b));
+      
+      if (aIsNumber && !bIsNumber) return -1;
+      if (!aIsNumber && bIsNumber) return 1;
+      return parseInt(a) - parseInt(b);
+    });
+    
+    // Group numeric grades
+    const numericGrades: string[] = [];
+    const specialGrades: string[] = [];
+    
+    sortedGrades.forEach(grade => {
+      if (!isNaN(parseInt(grade))) {
+        numericGrades.push(grade);
+      } else {
+        specialGrades.push(grade);
+      }
+    });
+    
+    // Combine consecutive numeric grades
+    const combinedNumericGrades = numericGrades.reduce((acc: string[], grade: string, i: number) => {
+      const prevGrade = numericGrades[i - 1];
       const lastGroup = acc[acc.length - 1];
       
       if (prevGrade && parseInt(grade) === parseInt(prevGrade) + 1) {
         if (lastGroup && lastGroup.includes('&')) {
           // If already combined, just update the last number
-          acc[acc.length - 1] = `Grade ${lastGroup.split('Grade ')[1].split(' & ')[0]} & ${grade}`;
+          acc[acc.length - 1] = `${lastGroup.split(' & ')[0]} & ${grade}`;
         } else {
           // Create new combined grade
-          acc[acc.length - 1] = `Grade ${prevGrade} & ${grade}`;
+          acc[acc.length - 1] = `${prevGrade} & ${grade}`;
         }
       } else {
         // If not consecutive, add as new grade
-        acc.push(`Grade ${grade}`);
+        acc.push(grade);
       }
       return acc;
     }, []);
+    
+    // Create final grade display string
+    let gradeDisplay: string[] = [];
+    
+    if (combinedNumericGrades.length > 0) {
+      gradeDisplay = combinedNumericGrades.map(g => 
+        g.includes('&') ? `Grade ${g}` : `Grade ${g}`
+      );
+    }
+    
+    // Add special grades (like AS) to the last numeric grade group if it exists
+    if (specialGrades.length > 0 && gradeDisplay.length > 0) {
+      const lastIndex = gradeDisplay.length - 1;
+      gradeDisplay[lastIndex] = `${gradeDisplay[lastIndex]} & ${specialGrades.join(', ')}`;
+    } else if (specialGrades.length > 0) {
+      // If no numeric grades, just add the special grades
+      gradeDisplay = specialGrades.map(g => `Grade ${g}`);
+    }
 
     // Combine syllabi if both exist
     const combinedSyllabi = syllabi.length === 2 ? ['Cambridge & Edexcel'] : syllabi;
     
     return (
       <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2, gap: 1 }}>
-        {combinedGrades.map((g, index) => (
+        {gradeDisplay.map((g, index) => (
           <Chip
             key={`grade-${index}`}
             label={g}

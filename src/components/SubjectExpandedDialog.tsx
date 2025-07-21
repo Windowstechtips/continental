@@ -1,9 +1,10 @@
-import { Dialog, DialogContent, Typography, IconButton, Box, useTheme, Button } from '@mui/material';
+import { Dialog, DialogContent, Typography, IconButton, Box, useTheme, Button, Stack, Chip } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SvgIconComponent } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { SubjectContent } from '../types/database.types';
+import { useCurriculum } from '../contexts/CurriculumContext';
 
 interface SubjectExpandedDialogProps {
   open: boolean;
@@ -63,8 +64,36 @@ const renderFormattedDescription = (text: string) => {
 
 const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: SubjectExpandedDialogProps) => {
   const theme = useTheme();
+  const { curriculum, selectedGrade } = useCurriculum();
   
   console.log('SubjectExpandedDialog rendered with props:', { open, subject, loading });
+
+  // Parse subject data to get curriculum and grade information
+  const parseSubjectData = () => {
+    if (!subject || !subject.content) return { grades: [], syllabi: [] };
+    
+    const grade = subject.content.grade ? [subject.content.grade] : [];
+    const syllabus = subject.content.syllabus ? [subject.content.syllabus.toLowerCase()] : [];
+    
+    return { grades: grade, syllabi: syllabus };
+  };
+
+  // Generate appropriate description for subjects without specific curriculum or grade
+  const getSubjectAvailabilityText = () => {
+    if (!subject || !subject.content) {
+      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+    }
+    
+    if (!subject.content.syllabus) {
+      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+    }
+    
+    if (!subject.content.grade) {
+      return `Related to All Grades ${subject.content.syllabus.charAt(0).toUpperCase() + subject.content.syllabus.slice(1)}`;
+    }
+    
+    return null; // No special text needed for subjects with specific curriculum and grade
+  };
 
   const handleViewTeachers = () => {
     onClose();
@@ -81,6 +110,8 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
   }
 
   console.log('SubjectExpandedDialog: Rendering dialog with subject:', subject);
+  
+  const { grades, syllabi } = parseSubjectData();
 
   return (
     <AnimatePresence mode="wait">
@@ -174,17 +205,78 @@ const SubjectExpandedDialog = ({ open, onClose, subject, loading = false }: Subj
                 >
                   <subject.icon sx={{ fontSize: { xs: '2.5rem', sm: '3rem' }, color: 'white' }} />
                 </Box>
-                <Typography 
-                  variant="h3" 
-                  sx={{ 
-                    color: 'white', 
-                    fontWeight: 600,
-                    fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
-                    textAlign: { xs: 'center', sm: 'left' }
-                  }}
-                >
-                  {subject.name}
-                </Typography>
+                <Box>
+                  <Typography 
+                    variant="h3" 
+                    sx={{ 
+                      color: 'white', 
+                      fontWeight: 600,
+                      fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+                      textAlign: { xs: 'center', sm: 'left' }
+                    }}
+                  >
+                    {subject.name}
+                  </Typography>
+                  
+                  {/* Display grade and curriculum pills */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1, gap: 1 }}>
+                    {grades.map((grade, index) => (
+                      <Chip
+                        key={`grade-${index}`}
+                        label={`Grade ${grade}`}
+                        size="medium"
+                        sx={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                          color: 'white',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          letterSpacing: '0.02em',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          py: 0.5,
+                        }}
+                      />
+                    ))}
+                    {syllabi.map((syllabus, index) => (
+                      <Chip
+                        key={`syllabus-${index}`}
+                        label={syllabus.charAt(0).toUpperCase() + syllabus.slice(1)}
+                        size="medium"
+                        sx={{
+                          background: syllabus.toLowerCase().includes('edexcel') 
+                            ? 'rgba(33, 150, 243, 0.8)'  // Edexcel blue
+                            : 'rgba(244, 67, 54, 0.8)', // Cambridge red
+                          color: 'white',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          letterSpacing: '0.02em',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                          py: 0.5,
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                  
+                  {/* Display availability text if needed */}
+                  {getSubjectAvailabilityText() && (
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: 'white', 
+                        opacity: 0.9,
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        textAlign: { xs: 'center', sm: 'left' },
+                        mt: 1,
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      {getSubjectAvailabilityText()}
+                    </Typography>
+                  )}
+                </Box>
               </Box>
             </Box>
 

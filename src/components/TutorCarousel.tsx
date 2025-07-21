@@ -119,33 +119,73 @@ const TutorCarousel = () => {
   const renderTeacherPills = (teacher: TeacherContent) => {
     const { grades, syllabi } = parseTeacherData(teacher);
     
-    // Combine consecutive grades
-    const combinedGrades = grades.reduce((acc: string[], grade: string, i: number) => {
-      const prevGrade = grades[i - 1];
+    // Sort grades to have numeric grades first, then special grades like 'AS'
+    const sortedGrades = [...grades].sort((a, b) => {
+      const aIsNumber = !isNaN(parseInt(a));
+      const bIsNumber = !isNaN(parseInt(b));
+      
+      if (aIsNumber && !bIsNumber) return -1;
+      if (!aIsNumber && bIsNumber) return 1;
+      return parseInt(a) - parseInt(b);
+    });
+    
+    // Group numeric grades
+    const numericGrades: string[] = [];
+    const specialGrades: string[] = [];
+    
+    sortedGrades.forEach(grade => {
+      if (!isNaN(parseInt(grade))) {
+        numericGrades.push(grade);
+      } else {
+        specialGrades.push(grade);
+      }
+    });
+    
+    // Combine consecutive numeric grades
+    const combinedNumericGrades = numericGrades.reduce((acc: string[], grade: string, i: number) => {
+      const prevGrade = numericGrades[i - 1];
       const lastGroup = acc[acc.length - 1];
       
       if (prevGrade && parseInt(grade) === parseInt(prevGrade) + 1) {
         // If this grade is consecutive with the previous one, combine them
-        if (lastGroup.includes('&')) {
+        if (lastGroup && lastGroup.includes('&')) {
           // If already combined, just update the last number
-          acc[acc.length - 1] = `Grade ${lastGroup.split('Grade ')[1].split(' & ')[0]} & ${grade}`;
+          acc[acc.length - 1] = `${lastGroup.split(' & ')[0]} & ${grade}`;
         } else {
           // Create new combined grade
-          acc[acc.length - 1] = `Grade ${prevGrade} & ${grade}`;
+          acc[acc.length - 1] = `${prevGrade} & ${grade}`;
         }
       } else {
         // If not consecutive, add as new grade
-        acc.push(`Grade ${grade}`);
+        acc.push(grade);
       }
       return acc;
     }, []);
+    
+    // Create final grade display string
+    let gradeDisplay: string[] = [];
+    
+    if (combinedNumericGrades.length > 0) {
+      gradeDisplay = combinedNumericGrades.map(g => 
+        g.includes('&') ? `Grade ${g}` : `Grade ${g}`
+      );
+    }
+    
+    // Add special grades (like AS) to the last numeric grade group if it exists
+    if (specialGrades.length > 0 && gradeDisplay.length > 0) {
+      const lastIndex = gradeDisplay.length - 1;
+      gradeDisplay[lastIndex] = `${gradeDisplay[lastIndex]} & ${specialGrades.join(', ')}`;
+    } else if (specialGrades.length > 0) {
+      // If no numeric grades, just add the special grades
+      gradeDisplay = specialGrades.map(g => `Grade ${g}`);
+    }
 
     // Combine syllabi if both exist
     const combinedSyllabi = syllabi.length === 2 ? ['Cambridge & Edexcel'] : syllabi;
     
     return (
       <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1, gap: 1 }}>
-        {combinedGrades.map((g, index) => (
+        {gradeDisplay.map((g, index) => (
           <Chip
             key={`grade-${index}`}
             label={g}
@@ -478,7 +518,7 @@ const TutorCarousel = () => {
                 variant="h2"
                 sx={{
                   textAlign: 'center',
-                  mb: { xs: 1, sm: 2 },
+                  mb: { xs: 4, sm: 5 },
                   fontSize: { xs: '2.25rem', sm: '2.75rem' },
                   fontWeight: 800,
                   background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
@@ -490,187 +530,17 @@ const TutorCarousel = () => {
                 Meet Our Teachers
               </Typography>
             </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-            >
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  textAlign: 'center',
-                  maxWidth: '800px',
-                  mx: 'auto',
-                  mb: 4,
-                  color: 'text.secondary',
-                  px: { xs: 2, sm: 0 },
-                }}
-              >
-                Our highly qualified teachers are dedicated to helping students achieve academic excellence
-                through personalized instruction and innovative teaching methods.
-              </Typography>
-            </motion.div>
-          </Box>
-
-          {/* Filter Controls */}
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center',
-            gap: 2,
-            mb: { xs: 4, sm: 6 },
-          }}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              width: '100%',
-              mb: 2
-            }}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <IconButton 
-                  onClick={toggleFilters}
-                  color="primary"
-                  sx={{ 
-                    mr: 2,
-                    bgcolor: 'rgba(0, 86, 179, 0.1)',
-                    '&:hover': {
-                      bgcolor: 'rgba(0, 86, 179, 0.2)',
-                    }
-                  }}
-                >
-                  <FilterListIcon />
-                </IconButton>
-              </motion.div>
-              
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Filter Teachers
-              </Typography>
-            </Box>
-            
-            <AnimatePresence>
-              {(showFilters || window.innerWidth > 600) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ width: '100%', overflow: 'hidden' }}
-                >
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: { xs: 'column', sm: 'row' }, 
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 3,
-                    width: '100%',
-                    p: { xs: 2, sm: 3 },
-                    borderRadius: 2,
-                    bgcolor: theme.palette.mode === 'dark' 
-                      ? 'rgba(30, 30, 35, 0.6)'
-                      : 'rgba(255, 255, 255, 0.8)',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    border: '1px solid',
-                    borderColor: theme.palette.mode === 'dark'
-                      ? 'rgba(255,255,255,0.1)'
-                      : 'rgba(0,0,0,0.05)',
-                  }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: { xs: '100%', sm: 'auto' } }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary' }}>
-                        Curriculum
-                      </Typography>
-                      <ToggleButtonGroup
-                        value={curriculum}
-                        exclusive
-                        onChange={handleCurriculumChange}
-                        aria-label="curriculum"
-                        sx={{
-                          width: { xs: '100%', sm: 'auto' },
-                          '& .MuiToggleButton-root': {
-                            px: { xs: 2, sm: 3 },
-                            py: { xs: 1, sm: 1 },
-                            fontSize: { xs: '0.9rem', sm: '0.9rem' },
-                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                            '&.Mui-selected': {
-                              backgroundColor: theme.palette.primary.main,
-                              color: 'white',
-                              '&:hover': {
-                                backgroundColor: theme.palette.primary.dark,
-                              },
-                            },
-                          }
-                        }}
-                      >
-                        <ToggleButton value="all" aria-label="all curricula">
-                          All
-                        </ToggleButton>
-                        <ToggleButton value="edexcel" aria-label="edexcel">
-                          Edexcel
-                        </ToggleButton>
-                        <ToggleButton value="cambridge" aria-label="cambridge">
-                          Cambridge
-                        </ToggleButton>
-                      </ToggleButtonGroup>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: { xs: '100%', sm: 'auto' } }}>
-                      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary' }}>
-                        Grade Level
-                      </Typography>
-                      <ToggleButtonGroup
-                        value={grade}
-                        exclusive
-                        onChange={handleGradeChange}
-                        aria-label="grade"
-                        sx={{
-                          width: { xs: '100%', sm: 'auto' },
-                          '& .MuiToggleButton-root': {
-                            px: { xs: 2, sm: 3 },
-                            py: { xs: 1, sm: 1 },
-                            fontSize: { xs: '0.9rem', sm: '0.9rem' },
-                            color: theme.palette.mode === 'dark' ? 'white' : 'text.primary',
-                            '&.Mui-selected': {
-                              backgroundColor: theme.palette.primary.main,
-                              color: 'white',
-                              '&:hover': {
-                                backgroundColor: theme.palette.primary.dark,
-                              },
-                            },
-                          }
-                        }}
-                      >
-                        <ToggleButton value="all" aria-label="all grades">
-                          All
-                        </ToggleButton>
-                        <ToggleButton value="9" aria-label="grade 9">
-                          Grade 9
-                        </ToggleButton>
-                        <ToggleButton value="10" aria-label="grade 10">
-                          Grade 10
-                        </ToggleButton>
-                      </ToggleButtonGroup>
-                    </Box>
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </Box>
 
           {renderContent()}
         </motion.div>
       </Container>
-
+      
       {selectedTutor && (
         <TutorExpandedDialog
-          tutor={selectedTutor}
-          open={!!selectedTutor}
+          open={true}
           onClose={handleCloseDialog}
+          tutor={selectedTutor}
         />
       )}
     </Box>

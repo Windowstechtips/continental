@@ -89,6 +89,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         display: 'flex', 
         flexDirection: 'column', 
         width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
         marginTop: isStorePage ? 0 : '64px'
       }}>
         {children}
@@ -102,7 +104,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 const AccountLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <main style={{ width: '100%', minHeight: '100vh' }}>
+      <main style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', minHeight: '100vh' }}>
         {children}
       </main>
       <Footer />
@@ -111,7 +113,11 @@ const AccountLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [mode, setMode] = useState<'light' | 'dark'>(() => {
+    // Get saved theme from localStorage or use default 'light'
+    const savedMode = localStorage.getItem('colorMode');
+    return (savedMode === 'dark' || savedMode === 'light') ? savedMode : 'light';
+  });
   const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -131,6 +137,11 @@ function App() {
 
     testConnection();
   }, []);
+
+  // Update localStorage when mode changes
+  useEffect(() => {
+    localStorage.setItem('colorMode', mode);
+  }, [mode]);
 
   const theme = useMemo(() => createTheme({
     palette: {
@@ -572,7 +583,7 @@ function App() {
 
   const toggleColorMode = () => {
     setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
-    localStorage.setItem('colorMode', mode === 'light' ? 'dark' : 'light');
+    // localStorage is updated via the useEffect hook that watches mode
   };
 
   // Set toggleColorMode and isDark on window object
@@ -624,7 +635,8 @@ function App() {
                   display: 'flex', 
                   flexDirection: 'column',
                   minHeight: '100vh',
-                  width: '100vw',
+                  width: '100%',
+                  maxWidth: '100vw',
                   overflow: 'hidden',
                   backgroundColor: mode === 'light' ? '#f8faff' : '#121212',
                   fontFamily: '"Proxima Nova", system-ui, -apple-system, sans-serif',

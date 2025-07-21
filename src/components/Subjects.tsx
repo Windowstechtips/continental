@@ -87,9 +87,36 @@ const Subjects = () => {
     };
   }).filter(subject => {
     if (!subject.content) return true; // Show all subjects if no content is found
+    
+    // Show subjects with no syllabus defined regardless of selected curriculum
+    if (!subject.content.syllabus) return true;
+    
+    // For subjects with syllabus defined but no grade, show if syllabus matches
+    if (subject.content.syllabus?.toLowerCase() === curriculum.toLowerCase() && !subject.content.grade) {
+      return true;
+    }
+    
+    // For subjects with both syllabus and grade defined, filter by both
     return subject.content.syllabus?.toLowerCase() === curriculum.toLowerCase() &&
            subject.content.grade === selectedGrade;
   });
+
+  // Generate appropriate description for subjects without specific curriculum or grade
+  const getSubjectAvailabilityText = (subject: Subject) => {
+    if (!subject.content) {
+      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+    }
+    
+    if (!subject.content.syllabus) {
+      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+    }
+    
+    if (!subject.content.grade) {
+      return `Related to All Grades ${subject.content.syllabus.charAt(0).toUpperCase() + subject.content.syllabus.slice(1)}`;
+    }
+    
+    return null; // No special text needed for subjects with specific curriculum and grade
+  };
 
   const handleSubjectClick = (subject: Subject) => {
     console.log('handleSubjectClick called with:', subject);
@@ -274,6 +301,22 @@ const Subjects = () => {
                       >
                         {subject.name}
                       </Typography>
+                      
+                      {/* Render availability text */}
+                      {getSubjectAvailabilityText(subject) && (
+                        <Typography
+                          variant="caption"
+                          align="center"
+                          sx={{
+                            mt: 0.5,
+                            color: theme.palette.text.secondary,
+                            fontSize: '0.7rem',
+                            fontStyle: 'italic'
+                          }}
+                        >
+                          {getSubjectAvailabilityText(subject)}
+                        </Typography>
+                      )}
                     </Box>
                   </CardContent>
                 </Card>

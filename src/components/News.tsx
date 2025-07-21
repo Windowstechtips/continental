@@ -63,11 +63,14 @@ const News = () => {
           gutterBottom
           sx={{
             mb: 6,
-            fontWeight: 600,
-            color: theme.palette.text.primary,
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #0056b3 0%, #64b5f6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontSize: { xs: '2.25rem', sm: '2.75rem' },
           }}
         >
-          Latest News & Announcements
+          Latest News & Events
         </Typography>
 
         <Grid container spacing={4}>
