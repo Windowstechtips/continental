@@ -98,12 +98,27 @@ export const fetchLatestNews = async (): Promise<NewsItem | null> => {
 };
 
 // Fetch all subjects content
-export const fetchSubjectsContent = async (): Promise<SubjectContent[]> => {
+export const fetchSubjectsContent = async (curriculum?: string, grade?: string): Promise<SubjectContent[]> => {
   try {
-    console.log('Fetching subjects...');
-    const { data, error } = await supabase
+    console.log('Fetching subjects with filters:', { curriculum, grade });
+    
+    let query = supabase
       .from('subjects_content')
       .select('id, subject_name, subject_description, whatsapp_link, grade, syllabus');
+
+    // Apply filters if provided - handle comma-separated values
+    if (curriculum && grade) {
+      // Both curriculum and grade specified
+      query = query.or(`and(syllabus.ilike.%${curriculum}%,grade.ilike.%${grade}%),syllabus.is.null,grade.is.null`);
+    } else if (curriculum) {
+      // Only curriculum specified
+      query = query.or(`syllabus.ilike.%${curriculum}%,syllabus.is.null`);
+    } else if (grade) {
+      // Only grade specified
+      query = query.or(`grade.ilike.%${grade}%,grade.is.null`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching subjects:', error.message, error);
@@ -116,7 +131,7 @@ export const fetchSubjectsContent = async (): Promise<SubjectContent[]> => {
     }
 
     // Add detailed logging
-    console.log('Raw subjects data:', data);
+    console.log('Filtered subjects data:', data);
 
     return data;
   } catch (error) {
@@ -125,13 +140,29 @@ export const fetchSubjectsContent = async (): Promise<SubjectContent[]> => {
   }
 };
 
-// Fetch all teachers content
-export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
+// Fetch all teachers content with optional filtering
+export const fetchTeachersContent = async (curriculum?: string, grade?: string): Promise<TeacherContent[]> => {
   try {
-    console.log('Fetching teachers...');
-    const { data, error } = await supabase
+    console.log('Fetching teachers with filters:', { curriculum, grade });
+    
+    let query = supabase
       .from('teachers_content')
       .select('*');
+
+    // Apply filters based on the database structure - handle comma-separated values
+    // From the screenshot, I can see values like "Cambridge,Edexcel" and "9,10,AS"
+    if (curriculum && grade) {
+      // Both curriculum and grade specified - need to match both in comma-separated fields
+      query = query.or(`and(syllabus.ilike.%${curriculum}%,grade.ilike.%${grade}%),and(syllabus.is.null,grade.is.null)`);
+    } else if (curriculum) {
+      // Only curriculum specified - match in comma-separated syllabus field
+      query = query.or(`syllabus.ilike.%${curriculum}%,syllabus.is.null`);
+    } else if (grade) {
+      // Only grade specified - match in comma-separated grade field
+      query = query.or(`grade.ilike.%${grade}%,grade.is.null`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching teachers:', error.message, error);
@@ -144,15 +175,7 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
     }
 
     // Log the raw data to see all fields
-    console.log('Raw teachers data:', JSON.stringify(data, null, 2));
-
-    // Add detailed logging for image sources
-    console.log('Teacher image sources:', data.map(teacher => ({
-      teacher_name: teacher.teacher_name,
-      picture_id: teacher.picture_id,
-      cloudinary_url: teacher.cloudinary_url,
-      image_source: teacher.cloudinary_url || (teacher.picture_id ? `/misc/teachers/${teacher.picture_id}` : 'no picture')
-    })));
+    console.log('Filtered teachers data:', JSON.stringify(data, null, 2));
 
     // Process the data to ensure qualifications is properly handled
     const processedData = data.map(teacher => {
@@ -171,14 +194,15 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
           id: teacher.id,
           teacher_name: teacher.teacher_name,
           subject_name: teacher.subject_name,
-          qualifications: Array.isArray(teacher.qualifications) 
-            ? teacher.qualifications 
+          qualifications: Array.isArray(teacher.qualifications)
+            ? teacher.qualifications
             : (teacher.qualifications ? JSON.parse(teacher.qualifications) : []),
           description: teacher.description,
           picture_id: teacher.picture_id,
           cloudinary_url: cloudinaryUrl || null,
           grade: teacher.grade || null,
-          syllabus: teacher.syllabus || null
+          syllabus: teacher.syllabus || null,
+          whatsapp_link: teacher.whatsapp_link || null
         };
       } catch (e) {
         console.error('Error processing teacher data:', e, teacher);
@@ -191,7 +215,8 @@ export const fetchTeachersContent = async (): Promise<TeacherContent[]> => {
           picture_id: teacher.picture_id,
           cloudinary_url: cloudinaryUrl || null,
           grade: teacher.grade || null,
-          syllabus: teacher.syllabus || null
+          syllabus: teacher.syllabus || null,
+          whatsapp_link: teacher.whatsapp_link || null
         };
       }
     });

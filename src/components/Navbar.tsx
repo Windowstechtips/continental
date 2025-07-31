@@ -46,8 +46,7 @@ interface NavbarProps {
 
 const navItems = [
   { label: 'Home', href: '/', icon: <HomeIcon /> },
-  { label: 'Why Join Us', href: '/#why-join', icon: <HelpIcon /> },
-  { label: 'Subjects', href: '/#subjects', icon: <SchoolIcon /> },
+  { label: 'About', href: '/#about-continental', icon: <HelpIcon /> },
   { label: 'Teachers', href: '/#tutors', icon: <PeopleIcon /> },
   { label: 'News', href: '/#news', icon: <NewspaperIcon /> },
   { label: 'Gallery', href: '/#gallery', icon: <CollectionsIcon /> },

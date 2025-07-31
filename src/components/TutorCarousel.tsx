@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import TutorExpandedDialog from './TutorExpandedDialog';
 import { TeacherContent } from '../types/database.types';
 import { fetchTeachersContent } from '../services/supabase';
+import { useCurriculum } from '../contexts/CurriculumContext';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SchoolIcon from '@mui/icons-material/School';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
 const TutorCarousel = () => {
   const theme = useTheme();
-  const [curriculum, setCurriculum] = useState('edexcel');
-  const [grade, setGrade] = useState('9');
+  const { curriculum, selectedGrade: grade, isInitialized } = useCurriculum();
   const [selectedTutor, setSelectedTutor] = useState<TeacherContent | null>(null);
   const [teachers, setTeachers] = useState<TeacherContent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,10 @@ const TutorCarousel = () => {
       setLoading(true);
       setError(null);
       try {
-        const teachersData = await fetchTeachersContent();
+        // Pass curriculum and grade to get filtered results from Supabase
+        const teachersData = await fetchTeachersContent(curriculum, grade);
+        console.log('TutorCarousel - Loaded filtered teachers:', teachersData);
+        console.log('TutorCarousel - Current curriculum:', curriculum, 'Current grade:', grade);
         setTeachers(teachersData || []);
       } catch (error) {
         console.error('Error loading teachers:', error);
@@ -33,26 +36,11 @@ const TutorCarousel = () => {
       }
     };
 
-    loadTeachers();
-  }, []);
-
-  const handleCurriculumChange = (
-    _: React.MouseEvent<HTMLElement>,
-    newCurriculum: string,
-  ) => {
-    if (newCurriculum !== null) {
-      setCurriculum(newCurriculum);
+    // Load data once the curriculum context is initialized
+    if (isInitialized && curriculum && grade) {
+      loadTeachers();
     }
-  };
-
-  const handleGradeChange = (
-    _: React.MouseEvent<HTMLElement>,
-    newGrade: string,
-  ) => {
-    if (newGrade !== null) {
-      setGrade(newGrade);
-    }
-  };
+  }, [curriculum, grade, isInitialized]);
 
   const handleTutorClick = (tutor: TeacherContent) => {
     setSelectedTutor(tutor);
@@ -66,20 +54,15 @@ const TutorCarousel = () => {
     setShowFilters(!showFilters);
   };
 
-  // Parse grades and syllabi from string to array
+  // Parse grades and syllabi from string to array (for display purposes)
   const parseTeacherData = (teacher: TeacherContent) => {
     const grades = teacher.grade ? teacher.grade.split(',').map(g => g.trim()) : [];
     const syllabi = teacher.syllabus ? teacher.syllabus.split(',').map(s => s.trim().toLowerCase()) : [];
     return { grades, syllabi };
   };
 
-  // Filter tutors based on selected curriculum and grade
-  const filteredTeachers = teachers.filter(teacher => {
-    const { grades, syllabi } = parseTeacherData(teacher);
-    const matchesSyllabus = curriculum === 'all' || syllabi.length === 0 || syllabi.includes(curriculum.toLowerCase());
-    const matchesGrade = grade === 'all' || grades.length === 0 || grades.includes(grade);
-    return matchesSyllabus && matchesGrade;
-  });
+  // No client-side filtering needed since Supabase does the filtering
+  const filteredTeachers = teachers;
 
   const renderQualifications = (teacher: TeacherContent) => {
     if (!teacher.qualifications || teacher.qualifications.length === 0) {

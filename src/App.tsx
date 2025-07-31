@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Subjects from './components/Subjects';
-import WhyJoinUs from './components/WhyJoinUs';
+import AboutContinental from './components/AboutContinental';
 import TutorCarousel from './components/TutorCarousel';
 import Footer from './components/Footer';
 import Gallery from './components/Gallery';
@@ -62,7 +62,7 @@ const Home = () => {
   return (
     <>
       <Hero />
-      <WhyJoinUs />
+      <AboutContinental />
       <Subjects />
       <TutorCarousel />
       <News />

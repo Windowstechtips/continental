@@ -7,15 +7,17 @@ import { useCurriculum } from '../contexts/CurriculumContext';
 
 const OurTutors = () => {
   const theme = useTheme();
-  const { curriculum, selectedGrade } = useCurriculum();
+  const { curriculum, selectedGrade, isInitialized } = useCurriculum();
   const [teachers, setTeachers] = useState<TeacherContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadTeachers = async () => {
       try {
-        const teachersData = await fetchTeachersContent();
-        console.log('Loaded teachers:', teachersData);
+        // Pass curriculum and grade to get filtered results from Supabase
+        const teachersData = await fetchTeachersContent(curriculum, selectedGrade);
+        console.log('Loaded filtered teachers:', teachersData);
+        console.log('Current curriculum:', curriculum, 'Current grade:', selectedGrade);
         setTeachers(teachersData);
       } catch (error) {
         console.error('Error loading teachers:', error);
@@ -23,21 +25,22 @@ const OurTutors = () => {
         setIsLoading(false);
       }
     };
-    loadTeachers();
-  }, []);
+    
+    // Load data once the curriculum context is initialized
+    if (isInitialized && curriculum && selectedGrade) {
+      setIsLoading(true);
+      loadTeachers();
+    }
+  }, [curriculum, selectedGrade, isInitialized]);
 
-  // Filter teachers based on curriculum and selected grade
-  const filteredTeachers = teachers.filter(teacher => 
-    teacher.syllabus?.toLowerCase() === curriculum.toLowerCase() &&
-    teacher.grade === selectedGrade
-  );
+  // No client-side filtering needed since Supabase does the filtering
+  const filteredTeachers = teachers;
 
-  // Log filtering results for debugging
-  console.log('Filtering teachers:', {
+  // Log results for debugging
+  console.log('Teachers from Supabase:', {
     currentCurriculum: curriculum,
     currentGrade: selectedGrade,
     totalTeachers: teachers.length,
-    filteredTeachers: filteredTeachers.length,
     teachers: teachers.map(t => ({
       name: t.teacher_name,
       syllabus: t.syllabus,

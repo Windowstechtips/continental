@@ -1,4 +1,5 @@
-import { Box, Container, Grid, Typography, Card, CardContent, useTheme, Chip, Stack } from '@mui/material';
+import { Box, Container, Grid, Typography, Card, CardContent, useTheme, Chip, Stack, IconButton, Tooltip } from '@mui/material';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { motion } from 'framer-motion';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import ScienceIcon from '@mui/icons-material/Science';
@@ -60,62 +61,62 @@ const Subjects = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [subjectContents, setSubjectContents] = useState<SubjectContent[]>([]);
-  const { curriculum, selectedGrade } = useCurriculum();
+  const { curriculum, selectedGrade, isInitialized } = useCurriculum();
 
-  // Fetch subject contents when component mounts
+  // Fetch subject contents when component mounts or when curriculum/grade changes
   useEffect(() => {
     const loadSubjectContents = async () => {
       try {
-        const contents = await fetchSubjectsContent();
-        console.log('Loaded subject contents:', contents);
+        // Pass curriculum and grade to get filtered results from Supabase
+        const contents = await fetchSubjectsContent(curriculum, selectedGrade);
+        console.log('Loaded filtered subject contents:', contents);
+        console.log('Current curriculum:', curriculum, 'Current grade:', selectedGrade);
         setSubjectContents(contents);
       } catch (error) {
         console.error('Error loading subject contents:', error);
       }
     };
-    loadSubjectContents();
-  }, []);
+    
+    // Load data once the curriculum context is initialized
+    if (isInitialized && curriculum && selectedGrade) {
+      loadSubjectContents();
+    }
+  }, [curriculum, selectedGrade, isInitialized]);
 
-  // Filter subjects based on curriculum and selected grade
+  // Map subjects with their content (no client-side filtering needed since Supabase does it)
   const filteredSubjects = subjects.map(subject => {
     const content = subjectContents.find(
-      content => content.subject_name.toLowerCase() === subject.name.toLowerCase()
+      content => content.subject_name.toLowerCase().trim() === subject.name.toLowerCase().trim()
     );
     return {
       ...subject,
       content
     };
-  }).filter(subject => {
-    if (!subject.content) return true; // Show all subjects if no content is found
-    
-    // Show subjects with no syllabus defined regardless of selected curriculum
-    if (!subject.content.syllabus) return true;
-    
-    // For subjects with syllabus defined but no grade, show if syllabus matches
-    if (subject.content.syllabus?.toLowerCase() === curriculum.toLowerCase() && !subject.content.grade) {
-      return true;
-    }
-    
-    // For subjects with both syllabus and grade defined, filter by both
-    return subject.content.syllabus?.toLowerCase() === curriculum.toLowerCase() &&
-           subject.content.grade === selectedGrade;
-  });
+  }).filter(subject => subject.content); // Only show subjects that have matching content from database
 
   // Generate appropriate description for subjects without specific curriculum or grade
   const getSubjectAvailabilityText = (subject: Subject) => {
     if (!subject.content) {
-      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+      const curr = curriculum.charAt(0).toUpperCase() + curriculum.slice(1);
+      return `Related to Grade ${selectedGrade} ${curr}`;
     }
-    
+
+    // If no syllabus, fallback to selected curriculum
     if (!subject.content.syllabus) {
-      return `Related to Grade ${selectedGrade} ${curriculum.charAt(0).toUpperCase() + curriculum.slice(1)} & Cambridge`;
+      const curr = curriculum.charAt(0).toUpperCase() + curriculum.slice(1);
+      return `Related to Grade ${selectedGrade} ${curr}`;
     }
-    
-    if (!subject.content.grade) {
+
+    // Only show syllabus if it matches the selected curriculum
+    if (subject.content.syllabus.toLowerCase().trim() === curriculum.toLowerCase().trim()) {
+      if (subject.content.grade) {
+        return `Related to Grade ${subject.content.grade} ${subject.content.syllabus.charAt(0).toUpperCase() + subject.content.syllabus.slice(1)}`;
+      }
       return `Related to All Grades ${subject.content.syllabus.charAt(0).toUpperCase() + subject.content.syllabus.slice(1)}`;
     }
-    
-    return null; // No special text needed for subjects with specific curriculum and grade
+
+    // If syllabus does not match selected curriculum, show nothing
+    return null;
   };
 
   const handleSubjectClick = (subject: Subject) => {
@@ -210,7 +211,7 @@ const Subjects = () => {
           )}
         </motion.div>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {filteredSubjects.map((subject, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
               <motion.div
@@ -271,7 +272,36 @@ const Subjects = () => {
                     }
                   }}
                 >
-                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                  <CardContent sx={{ p: { xs: 2, sm: 3 }, flexGrow: 1, position: 'relative' }}>
+                    {/* WhatsApp Button */}
+                    {subject.content?.whatsapp_link && (
+                      <Tooltip title="Contact via WhatsApp" placement="top">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(subject.content.whatsapp_link, '_blank');
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            top: { xs: 8, sm: 12 },
+                            right: { xs: 8, sm: 12 },
+                            backgroundColor: '#25D366',
+                            color: 'white',
+                            width: { xs: 36, sm: 40 },
+                            height: { xs: 36, sm: 40 },
+                            '&:hover': {
+                              backgroundColor: '#128C7E',
+                              transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 8px rgba(37, 211, 102, 0.3)',
+                          }}
+                        >
+                          <WhatsAppIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
                     <Box
                       sx={{
                         display: 'flex',
@@ -285,9 +315,9 @@ const Subjects = () => {
                       <Box
                         component={subject.icon}
                         sx={{
-                          fontSize: 48,
+                          fontSize: { xs: 40, sm: 48 },
                           color: theme.palette.primary.main,
-                          mb: 2
+                          mb: { xs: 1.5, sm: 2 }
                         }}
                       />
                       <Typography
@@ -296,7 +326,9 @@ const Subjects = () => {
                         align="center"
                         sx={{
                           fontWeight: 600,
-                          color: theme.palette.text.primary
+                          color: theme.palette.text.primary,
+                          fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                          lineHeight: 1.3,
                         }}
                       >
                         {subject.name}
@@ -310,8 +342,9 @@ const Subjects = () => {
                           sx={{
                             mt: 0.5,
                             color: theme.palette.text.secondary,
-                            fontSize: '0.7rem',
-                            fontStyle: 'italic'
+                            fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                            fontStyle: 'italic',
+                            lineHeight: 1.2,
                           }}
                         >
                           {getSubjectAvailabilityText(subject)}

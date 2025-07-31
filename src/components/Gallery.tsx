@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, SyntheticEvent } from 'react';
+import { useState, useEffect, Fragment, SyntheticEvent, useRef } from 'react';
 import { Box, Container, Typography, useTheme, IconButton, Modal, CircularProgress, Alert, List, ListItemButton, ListItemText, Divider, Paper } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
@@ -17,6 +17,9 @@ const Gallery = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [loadingTags, setLoadingTags] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   
   // Fetch tags when component mounts
   useEffect(() => {
@@ -108,6 +111,31 @@ const Gallery = () => {
     
     // Set a placeholder or default image
     (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2VlZWVlZSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIGZpbGw9IiM5OTk5OTkiPkltYWdlIE5vdCBBdmFpbGFibGU8L3RleHQ+PC9zdmc+';
+  };
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && images.length > 0) {
+      handleNext();
+    }
+    if (isRightSwipe && images.length > 0) {
+      handlePrev();
+    }
   };
 
   return (
@@ -204,10 +232,9 @@ const Gallery = () => {
                   px: { xs: 1, sm: 0 },
                   py: 1,
                   borderRadius: '16px',
-                  background: theme.palette.mode === 'dark' 
-                    ? 'rgba(30, 30, 35, 0.6)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'rgba(30, 30, 35, 0.6)'
                     : 'rgba(255, 255, 255, 0.8)',
-                  backdropFilter: 'blur(10px)',
                   boxShadow: theme.palette.mode === 'dark' 
                     ? '0 8px 32px rgba(0, 0, 0, 0.2)' 
                     : '0 8px 32px rgba(0, 0, 0, 0.05)',
@@ -328,28 +355,34 @@ const Gallery = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
               >
-                <Box sx={{ 
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '16/9',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  mb: 3,
-                  boxShadow: theme.palette.mode === 'dark' 
-                    ? '0 20px 40px -12px rgba(0,0,0,0.5)' 
-                    : '0 20px 40px -12px rgba(0,0,0,0.15)',
-                  cursor: 'pointer',
-                  border: theme.palette.mode === 'dark' 
-                    ? '1px solid rgba(255,255,255,0.1)' 
-                    : 'none',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: theme.palette.mode === 'dark' 
-                      ? '0 25px 50px -12px rgba(0,0,0,0.6)' 
-                      : '0 25px 50px -12px rgba(0,0,0,0.2)',
-                  }
-                }}>
+                <Box
+                  ref={imageRef}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  sx={{
+                    position: 'relative',
+                    width: '100%',
+                    aspectRatio: '16/9',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    mb: 3,
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 20px 40px -12px rgba(0,0,0,0.5)'
+                      : '0 20px 40px -12px rgba(0,0,0,0.15)',
+                    cursor: 'pointer',
+                    border: theme.palette.mode === 'dark'
+                      ? '1px solid rgba(255,255,255,0.1)'
+                      : 'none',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: theme.palette.mode === 'dark'
+                        ? '0 25px 50px -12px rgba(0,0,0,0.6)'
+                        : '0 25px 50px -12px rgba(0,0,0,0.2)',
+                    }
+                  }}
+                >
                   {/* Main Image */}
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -452,7 +485,7 @@ const Gallery = () => {
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Navigation Arrows */}
+                  {/* Navigation Arrows - Hidden on mobile for better touch experience */}
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -460,14 +493,14 @@ const Gallery = () => {
                     }}
                     sx={{
                       position: 'absolute',
-                      left: { xs: 8, sm: 16 },
+                      left: { xs: 4, sm: 16 },
                       top: '50%',
                       transform: 'translateY(-50%)',
                       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      backdropFilter: 'blur(5px)',
                       color: 'white',
-                      width: { xs: 40, sm: 48 },
-                      height: { xs: 40, sm: 48 },
+                      width: { xs: 32, sm: 48 },
+                      height: { xs: 32, sm: 48 },
+                      display: { xs: 'none', sm: 'flex' },
                       '&:hover': {
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         transform: 'translateY(-50%) scale(1.1)',
@@ -486,14 +519,14 @@ const Gallery = () => {
                     }}
                     sx={{
                       position: 'absolute',
-                      right: { xs: 8, sm: 16 },
+                      right: { xs: 4, sm: 16 },
                       top: '50%',
                       transform: 'translateY(-50%)',
                       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      backdropFilter: 'blur(5px)',
                       color: 'white',
-                      width: { xs: 40, sm: 48 },
-                      height: { xs: 40, sm: 48 },
+                      width: { xs: 32, sm: 48 },
+                      height: { xs: 32, sm: 48 },
+                      display: { xs: 'none', sm: 'flex' },
                       '&:hover': {
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         transform: 'translateY(-50%) scale(1.1)',
@@ -528,10 +561,9 @@ const Gallery = () => {
                     msOverflowStyle: 'none',
                     scrollbarWidth: 'none',
                     borderRadius: '12px',
-                    background: theme.palette.mode === 'dark' 
-                      ? 'rgba(30, 30, 35, 0.4)' 
+                    background: theme.palette.mode === 'dark'
+                      ? 'rgba(30, 30, 35, 0.4)'
                       : 'rgba(255, 255, 255, 0.6)',
-                    backdropFilter: 'blur(8px)',
                     boxShadow: theme.palette.mode === 'dark' 
                       ? '0 8px 24px rgba(0, 0, 0, 0.2)' 
                       : '0 8px 24px rgba(0, 0, 0, 0.05)',
@@ -570,22 +602,22 @@ const Gallery = () => {
                         alt={image.alt || `Thumbnail ${index + 1}`}
                         onClick={() => handleThumbnailClick(index)}
                         sx={{
-                          width: { xs: 90, sm: 110 },
-                          height: { xs: 68, sm: 82 },
+                          width: { xs: 70, sm: 110 },
+                          height: { xs: 52, sm: 82 },
                           borderRadius: '8px',
                           objectFit: 'cover',
                           cursor: 'pointer',
-                          border: index === currentIndex 
-                            ? `3px solid ${theme.palette.primary.main}` 
-                            : '3px solid transparent',
+                          border: index === currentIndex
+                            ? `2px solid ${theme.palette.primary.main}`
+                            : '2px solid transparent',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           opacity: index === currentIndex ? 1 : 0.7,
-                          boxShadow: index === currentIndex 
-                            ? '0 6px 12px rgba(0, 0, 0, 0.2)' 
-                            : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                          boxShadow: index === currentIndex
+                            ? '0 4px 8px rgba(0, 0, 0, 0.2)'
+                            : '0 2px 4px rgba(0, 0, 0, 0.1)',
                           '&:hover': {
                             opacity: 1,
-                            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                            boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
                           },
                         }}
                         onError={(e) => handleImageError(e, index)}
@@ -598,7 +630,7 @@ const Gallery = () => {
           )}
         </Box>
 
-        {/* Modal for enlarged image */}
+        {/* Modal for enlarged image with navigation */}
         <Modal
           open={modalOpen}
           onClose={handleCloseModal}
@@ -607,7 +639,6 @@ const Gallery = () => {
             alignItems: 'center',
             justifyContent: 'center',
             bgcolor: 'rgba(0, 0, 0, 0.9)',
-            backdropFilter: 'blur(5px)',
           }}
         >
           <motion.div
@@ -616,10 +647,10 @@ const Gallery = () => {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3 }}
           >
-            <Box sx={{ 
-              position: 'relative', 
-              maxWidth: '90vw', 
-              maxHeight: '90vh',
+            <Box sx={{
+              position: 'relative',
+              maxWidth: '95vw',
+              maxHeight: '95vh',
               borderRadius: '12px',
               overflow: 'hidden',
               boxShadow: '0 24px 48px rgba(0, 0, 0, 0.4)',
@@ -630,14 +661,16 @@ const Gallery = () => {
                   src={images[currentIndex].secure_url}
                   alt={images[currentIndex].alt || 'Gallery Image'}
                   sx={{
-                    maxWidth: '90vw',
-                    maxHeight: '90vh',
+                    maxWidth: '95vw',
+                    maxHeight: '95vh',
                     objectFit: 'contain',
                     borderRadius: '12px',
                   }}
                   onError={(e) => handleImageError(e, currentIndex)}
                 />
               )}
+              
+              {/* Close Button */}
               <IconButton
                 onClick={handleCloseModal}
                 sx={{
@@ -646,17 +679,94 @@ const Gallery = () => {
                   top: 16,
                   color: 'white',
                   backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  backdropFilter: 'blur(5px)',
                   '&:hover': {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     transform: 'scale(1.1)',
                   },
                   transition: 'all 0.2s ease',
                   boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                  zIndex: 1000,
                 }}
               >
                 <CloseIcon />
               </IconButton>
+
+              {/* Navigation Arrows in Fullscreen */}
+              {images.length > 1 && (
+                <>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrev();
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      left: 16,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      width: 56,
+                      height: 56,
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        transform: 'translateY(-50%) scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                      zIndex: 1000,
+                    }}
+                  >
+                    <NavigateBeforeIcon fontSize="large" />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNext();
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      right: 16,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      width: 56,
+                      height: 56,
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        transform: 'translateY(-50%) scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                      zIndex: 1000,
+                    }}
+                  >
+                    <NavigateNextIcon fontSize="large" />
+                  </IconButton>
+                </>
+              )}
+
+              {/* Image Counter */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 16,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  color: 'white',
+                  px: 2,
+                  py: 1,
+                  borderRadius: '20px',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  zIndex: 1000,
+                }}
+              >
+                {currentIndex + 1} / {images.length}
+              </Box>
             </Box>
           </motion.div>
         </Modal>

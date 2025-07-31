@@ -96,22 +96,33 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
     const combinedSyllabi = syllabi.length === 2 ? ['Cambridge & Edexcel'] : syllabi;
     
     return (
-      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2, gap: 1 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        flexWrap="wrap"
+        sx={{
+          gap: { xs: 0.75, sm: 1 },
+          justifyContent: { xs: 'center', sm: 'flex-start' },
+          alignItems: 'center'
+        }}
+      >
         {gradeDisplay.map((g, index) => (
           <Chip
             key={`grade-${index}`}
             label={g}
-            size="medium"
+            size={window.innerWidth <= 600 ? "small" : "medium"}
             sx={{
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               color: 'white',
-              fontSize: '0.85rem',
+              fontSize: { xs: '0.75rem', sm: '0.85rem' },
               fontWeight: 600,
               backdropFilter: 'blur(4px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               letterSpacing: '0.02em',
               textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              py: 0.5,
+              py: { xs: 0.25, sm: 0.5 },
+              px: { xs: 1, sm: 1.5 },
+              height: { xs: 28, sm: 32 },
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.25)',
               }
@@ -122,21 +133,23 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
           <Chip
             key={`syllabus-${index}`}
             label={s.includes('&') ? s : s.charAt(0).toUpperCase() + s.slice(1)}
-            size="medium"
+            size={window.innerWidth <= 600 ? "small" : "medium"}
             sx={{
-              background: s.includes('&') 
+              background: s.includes('&')
                 ? 'linear-gradient(90deg, rgba(244, 67, 54, 0.8) 0%, rgba(33, 150, 243, 0.8) 100%)'
-                : s.toLowerCase().includes('edexcel') 
+                : s.toLowerCase().includes('edexcel')
                   ? 'rgba(33, 150, 243, 0.8)'  // Edexcel blue
                   : 'rgba(244, 67, 54, 0.8)', // Cambridge red
               color: 'white',
-              fontSize: '0.85rem',
+              fontSize: { xs: '0.75rem', sm: '0.85rem' },
               fontWeight: 600,
               backdropFilter: 'blur(4px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               letterSpacing: '0.02em',
               textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              py: 0.5,
+              py: { xs: 0.25, sm: 0.5 },
+              px: { xs: 1, sm: 1.5 },
+              height: { xs: 28, sm: 32 },
               '&:hover': {
                 background: s.includes('&')
                   ? 'linear-gradient(90deg, rgba(244, 67, 54, 0.9) 0%, rgba(33, 150, 243, 0.9) 100%)'
@@ -330,23 +343,6 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
               alignItems: { xs: 'flex-start', sm: 'center' },
               height: '100%',
             },
-            '& .MuiDialogContent-root': {
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '8px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                borderRadius: '4px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                borderRadius: '4px',
-                '&:hover': {
-                  background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                },
-              },
-            },
             backdropFilter: 'blur(8px)',
           }}
           BackdropProps={{
@@ -397,117 +393,162 @@ const TutorExpandedDialog = ({ open, onClose, tutor }: TutorExpandedDialogProps)
               },
             }}
           >
-            <Box sx={{ 
-              display: 'flex', 
+            <Box sx={{
+              display: 'flex',
               flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'center', sm: 'center' },
-              position: 'relative', 
+              alignItems: { xs: 'center', sm: 'flex-start' },
+              position: 'relative',
               zIndex: 1,
-              gap: { xs: 3, sm: 4 }
+              gap: { xs: 2, sm: 4 },
+              width: '100%'
             }}>
-              <Avatar
-                src={
-                  tutor.cloudinary_url || 
-                  (tutor.picture_id?.includes('http') ? tutor.picture_id : 
-                   tutor.picture_id ? 
-                    tutor.picture_id.includes('/') ? 
-                      `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${tutor.picture_id}` : 
-                      `/misc/teachers/${tutor.picture_id}` 
-                    : undefined)
-                }
-                alt={tutor.teacher_name}
-                sx={{
-                  width: { xs: 130, sm: 160 },
-                  height: { xs: 130, sm: 160 },
-                  bgcolor: 'primary.main',
-                  fontSize: '3rem',
-                  border: '4px solid white',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                }}
-              >
-                {tutor.teacher_name.charAt(0)}
-              </Avatar>
-              
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                alignItems: { xs: 'center', sm: 'flex-start' }
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexShrink: 0
               }}>
-                <Typography 
-                  variant="h4" 
-                  gutterBottom 
-                  sx={{ 
-                    mb: 1, 
-                    color: 'white', 
+                <Avatar
+                  src={
+                    tutor.cloudinary_url ||
+                    (tutor.picture_id?.includes('http') ? tutor.picture_id :
+                     tutor.picture_id ?
+                       tutor.picture_id.includes('/') ?
+                         `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/${tutor.picture_id}` :
+                         `/misc/teachers/${tutor.picture_id}`
+                       : undefined)
+                  }
+                  alt={tutor.teacher_name}
+                  sx={{
+                    width: { xs: 120, sm: 160 },
+                    height: { xs: 120, sm: 160 },
+                    bgcolor: 'primary.main',
+                    fontSize: { xs: '2.5rem', sm: '3rem' },
+                    border: '4px solid white',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  {tutor.teacher_name.charAt(0)}
+                </Avatar>
+              </Box>
+              
+              <Box sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'center', sm: 'flex-start' },
+                flex: 1,
+                width: { xs: '100%', sm: 'auto' }
+              }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    mb: { xs: 1, sm: 1.5 },
+                    color: 'white',
                     fontWeight: 700,
-                    fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                    fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' },
                     textAlign: { xs: 'center', sm: 'left' },
                     textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    lineHeight: 1.2
                   }}
                 >
                   {tutor.teacher_name}
                 </Typography>
                 
-                <Box sx={{ 
-                  display: 'flex', 
+                <Box sx={{
+                  display: 'flex',
                   alignItems: 'center',
+                  justifyContent: { xs: 'center', sm: 'flex-start' },
                   flexDirection: { xs: 'column', sm: 'row' },
-                  gap: { xs: 1, sm: 2 }
+                  gap: { xs: 0.5, sm: 1.5 },
+                  mb: { xs: 1.5, sm: 2 },
+                  width: '100%'
                 }}>
                   {getSubjectIcon(tutor.subject_name)}
-                  <Typography 
-                    variant="h3" 
-                    sx={{ 
+                  <Typography
+                    variant="h5"
+                    sx={{
                       color: '#E3F2FD',
-                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                      fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
                       textShadow: '0 2px 4px rgba(0,0,0,0.2)',
                       textAlign: { xs: 'center', sm: 'left' },
-                      mb: 2
+                      lineHeight: 1.2
                     }}
                   >
                     {tutor.subject_name}
                   </Typography>
                 </Box>
                 
-                {renderTeacherPills()}
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: { xs: 'center', sm: 'flex-start' },
+                  width: '100%',
+                  mb: { xs: 2, sm: 3 }
+                }}>
+                  {renderTeacherPills()}
+                </Box>
                 
                 {tutor.whatsapp_link && (
-                  <Button
-                    variant="contained"
-                    startIcon={<WhatsAppIcon />}
-                    href={tutor.whatsapp_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      mt: 3,
-                      bgcolor: '#25D366',
-                      color: 'white',
-                      '&:hover': {
-                        bgcolor: '#128C7E',
-                      },
-                      fontWeight: 600,
-                      px: 3,
-                      py: 1,
-                      borderRadius: 2,
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    Contact via WhatsApp
-                  </Button>
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: { xs: 'center', sm: 'flex-start' },
+                    width: '100%'
+                  }}>
+                    <Button
+                      variant="contained"
+                      startIcon={<WhatsAppIcon />}
+                      href={tutor.whatsapp_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
+                        bgcolor: '#25D366',
+                        color: 'white',
+                        '&:hover': {
+                          bgcolor: '#128C7E',
+                        },
+                        fontWeight: 600,
+                        px: { xs: 2.5, sm: 3 },
+                        py: { xs: 0.75, sm: 1 },
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        fontSize: { xs: '0.875rem', sm: '1rem' }
+                      }}
+                    >
+                      Contact via WhatsApp
+                    </Button>
+                  </Box>
                 )}
               </Box>
             </Box>
           </Box>
 
           {/* Scrollable Content Area */}
-          <DialogContent 
-            sx={{ 
-              p: { xs: 3, sm: 4, md: 5 },
-              height: { xs: 'calc(100vh - 250px)', sm: 'auto' }, // Adjust based on header height
+          <DialogContent
+            sx={{
+              p: { xs: 2, sm: 4, md: 5 },
+              maxHeight: {
+                xs: 'calc(100vh - 280px)',
+                sm: 'calc(100vh - 320px)',
+                md: 'calc(100vh - 350px)'
+              },
               overflowY: 'auto',
+              overflowX: 'hidden',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'rgba(0,0,0,0.05)',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: '3px',
+                '&:hover': {
+                  background: 'rgba(0,0,0,0.3)',
+                },
+              },
             }}
           >
             <Grid container spacing={{ xs: 4, sm: 6 }}>
